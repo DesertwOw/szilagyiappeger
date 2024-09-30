@@ -3,7 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     kotlin("kapt")
     alias(libs.plugins.google.dagger.hilt)
+    alias(libs.plugins.gms.googleServices)
 }
+
 
 android {
     namespace = "hu.radosdev.szilagyiapp"
