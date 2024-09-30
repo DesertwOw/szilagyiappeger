@@ -1,8 +1,6 @@
 package hu.radosdev.szilagyiapp.data.entity
 
-data class MenuItem(
-    val id: String,
+data class MainMenuItem(
     val title: String,
-    val url: String
+    val childs: List<ChildMenuItem>?
 )
-

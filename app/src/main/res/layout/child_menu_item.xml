@@ -6,14 +6,8 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/menu_item_title"
+        android:id="@+id/child_menu_item_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Menu Item" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/submenu_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
+        android:text="Child Menu Item" />
 </LinearLayout>

@@ -7,81 +7,88 @@ import android.webkit.WebViewClient
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import hu.radosdev.szilagyiapp.databinding.ActivityMainBinding
+import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
+import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.menu.MenuAdapter
+import hu.radosdev.szilagyiapp.menu.ChildMenuAdapter // Import ChildMenuAdapter if needed
 import hu.radosdev.szilagyiapp.menu.MenuViewModel
-import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
     private lateinit var drawerLayout: DrawerLayout
-    private lateinit var webView: WebView
     private val menuViewModel: MenuViewModel by viewModels()
+    private lateinit var webView: WebView
+    private lateinit var menuAdapter: MenuAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
 
-        // Set up the toolbar
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        // Set up the drawer layout and menu icon for toggling
+        // Set up drawer layout and menu icon for toggling
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
-        menuIcon.setOnClickListener {
-            toggleDrawer()
-        }
+        menuIcon.setOnClickListener { toggleDrawer() }
 
-        // Set up RecyclerView for the menu inside the drawer
+        // Set up RecyclerView for menu items
         val recyclerView = findViewById<RecyclerView>(R.id.menu_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = MenuAdapter(emptyList()) // Initially an empty list
-        recyclerView.adapter = adapter
 
-        // Observe the menu data using coroutines
-        menuViewModel.fetchMenu() // Trigger fetching menu items
-        lifecycleScope.launchWhenStarted {
-            menuViewModel.menu.collect { menu ->
-                menu?.let {
-                    adapter.updateMenu(it.mainMenu) // Update adapter with new menu items
-                }
-            }
-        }
+        // Initialize the MenuAdapter
+        menuAdapter = MenuAdapter(emptyList(), ::handleMenuItemClick, ::handleChildMenuItemClick)
+        recyclerView.adapter = menuAdapter
 
-        // Set up WebView
         webView = findViewById(R.id.webview)
         webView.settings.javaScriptEnabled = true
+
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                // Inject JavaScript to hide the <header> element
                 val script = "document.querySelector('header').style.display='none';"
                 webView.evaluateJavascript(script, null)
             }
         }
-        webView.webChromeClient = WebChromeClient()
 
-        // Load the webpage
+        webView.webChromeClient = WebChromeClient()
         webView.loadUrl("https://www.szilagyi-eger.hu/")
+
+        // Observe menu items from ViewModel
+        menuViewModel.loadMenuItems()
+        menuViewModel.menuItems.observe(this) { items: List<MainMenuItem> ->
+            menuAdapter.updateMenu(items)
+        }
     }
 
-    // Method to toggle the navigation drawer
     private fun toggleDrawer() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             drawerLayout.openDrawer(GravityCompat.START)
         }
+    }
+
+    // Handle main menu item click
+    private fun handleMenuItemClick(mainMenuItem: MainMenuItem) {
+        if (mainMenuItem.childs.isNullOrEmpty()) {
+            // Load the first child URL or any action
+            mainMenuItem.childs?.firstOrNull()?.let { childMenuItem ->
+                webView.loadUrl(childMenuItem.url)
+                toggleDrawer() // Close drawer after navigation
+            }
+        } else {
+            // Submenu exists
+            // You might want to do something specific here, like showing the submenu
+        }
+    }
+
+    // Handle child menu item click
+    private fun handleChildMenuItemClick(childMenuItem: ChildMenuItem) {
+        webView.loadUrl(childMenuItem.url)
+        toggleDrawer() // Close drawer after navigation
     }
 }
