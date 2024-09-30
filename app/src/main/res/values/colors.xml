@@ -5,6 +5,7 @@
     <color name="primary_pantone_gray">#5b6770</color>
     <color name="primary_orange">#b97959</color>
     <color name="primary_pantone_orange">#c66e4e</color>
+    <color name="white">#ffffff</color>
 </resources>
 
 
