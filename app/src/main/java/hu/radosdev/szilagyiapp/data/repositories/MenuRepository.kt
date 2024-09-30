@@ -12,7 +12,7 @@ class MenuRepository  @Inject constructor(
     suspend fun fetchMenu(): Menu? {
 
         return try{
-            val storageRef = firebaseStorage.getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/szilagyiapp.appspot.com/o/menuItems.json?alt=media&token=cbc83ccf-5816-43dd-94e7-daadd8397d5e")
+            val storageRef = firebaseStorage.getReferenceFromUrl("xd")
             val data = storageRef.getBytes(Long.MAX_VALUE).await()
             val json = String(data)
             gson.fromJson(json, Menu::class.java)
