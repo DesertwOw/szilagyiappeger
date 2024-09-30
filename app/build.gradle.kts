@@ -46,13 +46,16 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.recyclerview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.google.dagger.hilt)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     kapt(libs.google.dagger.hilt.compiler)
-
+    implementation(libs.gson)
 }
 
 kapt {
