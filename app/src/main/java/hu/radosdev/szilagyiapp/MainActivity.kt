@@ -1,6 +1,7 @@
 package hu.radosdev.szilagyiapp
 
 import android.os.Bundle
+import android.util.Log
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -9,14 +10,18 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.menu.MenuAdapter
 import hu.radosdev.szilagyiapp.menu.ChildMenuAdapter // Import ChildMenuAdapter if needed
 import hu.radosdev.szilagyiapp.menu.MenuViewModel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -25,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private val menuViewModel: MenuViewModel by viewModels()
     private lateinit var webView: WebView
     private lateinit var menuAdapter: MenuAdapter
+    private val TAG = "FCM"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +68,11 @@ class MainActivity : AppCompatActivity() {
         menuViewModel.menuItems.observe(this) { items: List<MainMenuItem> ->
             menuAdapter.updateMenu(items)
         }
+
+        lifecycleScope.launch {
+            fetchFcmToken()
+        }
+
     }
 
     private fun toggleDrawer() {
@@ -90,5 +101,10 @@ class MainActivity : AppCompatActivity() {
     private fun handleChildMenuItemClick(childMenuItem: ChildMenuItem) {
         webView.loadUrl(childMenuItem.url)
         toggleDrawer() // Close drawer after navigation
+    }
+
+    private suspend fun fetchFcmToken() {
+        val token = FirebaseMessaging.getInstance().token.await() // Coroutine-al várjuk a token-t
+        Log.d(TAG, "FCM Token: $token")
     }
 }

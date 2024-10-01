@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     kapt(libs.google.dagger.hilt.compiler)
     implementation(libs.gson)
+    implementation(libs.firebase.messaging)
 }
 
 kapt {
