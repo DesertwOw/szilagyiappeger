@@ -5,23 +5,28 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".data.hilt.SzilagyiApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/szilagyi_icon"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/szilagyi_icon_round"
-        android:name=".data.hilt.SzilagyiApplication"
         android:supportsRtl="true"
         android:theme="@style/Theme.SzilagyiApp.Light"
         tools:targetApi="31">
+        <activity
+            android:name=".data.fcm.WebViewActivity"
+            android:exported="false" />
+
         <service
             android:name=".data.fcm.SzilagyiFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
         <activity
             android:name=".MainActivity"
             android:exported="false" />
