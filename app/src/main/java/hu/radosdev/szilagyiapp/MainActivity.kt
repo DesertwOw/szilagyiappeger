@@ -2,6 +2,7 @@ package hu.radosdev.szilagyiapp
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -18,7 +19,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.menu.MenuAdapter
-import hu.radosdev.szilagyiapp.menu.ChildMenuAdapter // Import ChildMenuAdapter if needed
 import hu.radosdev.szilagyiapp.menu.MenuViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var menuAdapter: MenuAdapter
     private val TAG = "FCM"
+    private val defaultUrl = "https://www.szilagyi-eger.hu/" // Default URL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         // Set up drawer layout and menu icon for toggling
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
+        val homeIcon = findViewById<ImageView>(R.id.menu_home)
         menuIcon.setOnClickListener { toggleDrawer() }
 
         // Set up RecyclerView for menu items
@@ -50,18 +52,15 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = menuAdapter
 
         webView = findViewById(R.id.webview)
-        webView.settings.javaScriptEnabled = true
+        webView.visibility = View.INVISIBLE
 
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                val script = "document.querySelector('header').style.display='none';"
-                webView.evaluateJavascript(script, null)
-            }
+        setupWebView()
+
+
+        // Home icon click listener to return to default WebView page
+        homeIcon.setOnClickListener {
+            webView.loadUrl(defaultUrl) // Load default URL on home icon click
         }
-
-        webView.webChromeClient = WebChromeClient()
-        webView.loadUrl("https://www.szilagyi-eger.hu/")
 
         // Observe menu items from ViewModel
         menuViewModel.loadMenuItems()
@@ -72,7 +71,31 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             fetchFcmToken()
         }
+    }
 
+    private fun setupWebView(){
+        webView.settings.javaScriptEnabled = true
+
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+
+                // JavaScript, amely elrejti a header-t
+                val hideHeaderScript = """
+                    (function() {
+                        document.querySelector('header').style.display='none';
+                    })();
+                """.trimIndent()
+
+                webView.evaluateJavascript(hideHeaderScript) {
+                    // Miután a JavaScript lefutott, jelenítsük meg a WebView-t
+                    webView.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        webView.webChromeClient = WebChromeClient()
+        webView.loadUrl(defaultUrl)
     }
 
     private fun toggleDrawer() {
@@ -107,4 +130,8 @@ class MainActivity : AppCompatActivity() {
         val token = FirebaseMessaging.getInstance().token.await() // Coroutine-al várjuk a token-t
         Log.d(TAG, "FCM Token: $token")
     }
+
+
+
 }
+
