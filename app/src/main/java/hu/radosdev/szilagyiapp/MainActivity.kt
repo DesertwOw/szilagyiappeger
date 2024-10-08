@@ -81,13 +81,23 @@ class MainActivity : AppCompatActivity() {
                 super.onPageFinished(view, url)
 
                 // JavaScript, amely elrejti a header-t
-                val hideHeaderScript = """
-                    (function() {
-                        document.querySelector('header').style.display='none';
-                    })();
-                """.trimIndent()
+                val hideElementsScript = """
+                (function() {
+                    // Hide the header
+                    var header = document.querySelector('header');
+                    if (header) {
+                        header.style.display = 'none';
+                    }
 
-                webView.evaluateJavascript(hideHeaderScript) {
+                    // Hide the breadcrumb navigation
+                    var breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
+                    if (breadcrumbNav) {
+                        breadcrumbNav.style.display = 'none';
+                    }
+                })();
+            """.trimIndent()
+
+                webView.evaluateJavascript(hideElementsScript) {
                     // Miután a JavaScript lefutott, jelenítsük meg a WebView-t
                     webView.visibility = View.VISIBLE
                 }
