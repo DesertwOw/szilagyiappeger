@@ -15,3 +15,5 @@
 local.properties
 
 app/google-services.json
+
+app/src/main/java/hu/radosdev/szilagyiapp/data/repositories/MenuRepository.kt
