@@ -16,7 +16,7 @@ class MenuAdapter(
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit
 ) : RecyclerView.Adapter<MenuAdapter.MenuViewHolder>() {
 
-    private var expandedPosition: Int = RecyclerView.NO_POSITION // Track expanded position for main menu items
+    private var expandedPosition: Int = RecyclerView.NO_POSITION
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.menu_item, parent, false)
@@ -27,24 +27,41 @@ class MenuAdapter(
         val menuItem = menuItems[position]
         holder.bind(menuItem)
 
-        // Handle main menu item click
         holder.itemView.setOnClickListener {
             val adapterPosition = holder.adapterPosition
             if (adapterPosition != RecyclerView.NO_POSITION) {
                 // Toggle the expanded state for main menu items
-                expandedPosition = if (expandedPosition == adapterPosition) {
+                val wasExpanded = expandedPosition == adapterPosition
+                expandedPosition = if (wasExpanded) {
                     RecyclerView.NO_POSITION // Collapse if already expanded
                 } else {
                     adapterPosition // Expand the selected item
                 }
-                notifyDataSetChanged() // Refresh the adapter to update visibility
+
+                notifyItemChanged(adapterPosition) // Update the current item
+                if (wasExpanded) {
+                    notifyItemChanged(expandedPosition) // Collapse the previous expanded item
+                } else {
+                    notifyItemRangeChanged(adapterPosition + 1, itemCount - (adapterPosition + 1)) // Refresh items below
+                }
                 onMainMenuItemClick(menuItem)
             }
         }
 
-        // Set the visibility of the submenu based on expansion state
+        // Set visibility and animation for submenu
         val isExpanded = holder.adapterPosition == expandedPosition
         holder.submenuRecyclerView.visibility = if (isExpanded) View.VISIBLE else View.GONE
+
+        // Animate submenu visibility
+        if (isExpanded) {
+            holder.submenuRecyclerView.alpha = 0f
+            holder.submenuRecyclerView.visibility = View.VISIBLE
+            holder.submenuRecyclerView.animate().alpha(1f).setDuration(300).start()
+        } else {
+            holder.submenuRecyclerView.animate().alpha(0f).setDuration(300).withEndAction {
+                holder.submenuRecyclerView.visibility = View.GONE
+            }.start()
+        }
 
         // Setup child menu items adapter only if expanded
         if (isExpanded) {
