@@ -16,8 +16,7 @@ class MenuAdapter(
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit
 ) : RecyclerView.Adapter<MenuAdapter.MenuViewHolder>() {
 
-    // Tároljuk az éppen megnyitott menü pozícióját
-    private var expandedPosition: Int = RecyclerView.NO_POSITION
+    private var expandedPosition: Int = RecyclerView.NO_POSITION // Track expanded position for main menu items
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.menu_item, parent, false)
@@ -28,29 +27,36 @@ class MenuAdapter(
         val menuItem = menuItems[position]
         holder.bind(menuItem)
 
-        // Főmenü elem kattintása
+        // Handle main menu item click
         holder.itemView.setOnClickListener {
             val adapterPosition = holder.adapterPosition
             if (adapterPosition != RecyclerView.NO_POSITION) {
-                if (expandedPosition == adapterPosition) {
-                    // Ha már ki van bontva, összecsukjuk
-                    expandedPosition = RecyclerView.NO_POSITION
+                // Toggle the expanded state for main menu items
+                expandedPosition = if (expandedPosition == adapterPosition) {
+                    RecyclerView.NO_POSITION // Collapse if already expanded
                 } else {
-                    // Ha másik elem van kinyitva, azt becsukjuk, és ezt nyitjuk ki
-                    expandedPosition = adapterPosition
+                    adapterPosition // Expand the selected item
                 }
-                notifyDataSetChanged() // Frissítjük a megjelenést
+                notifyDataSetChanged() // Refresh the adapter to update visibility
                 onMainMenuItemClick(menuItem)
             }
         }
 
-        // A child menü láthatóságának beállítása
+        // Set the visibility of the submenu based on expansion state
         val isExpanded = holder.adapterPosition == expandedPosition
         holder.submenuRecyclerView.visibility = if (isExpanded) View.VISIBLE else View.GONE
 
-
+        // Setup child menu items adapter only if expanded
+        if (isExpanded) {
+            holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
+            holder.submenuRecyclerView.adapter = ChildMenuAdapter(menuItem.childs ?: emptyList()) { childMenuItem ->
+                // Handle child menu item click
+                if (childMenuItem.url.isNotEmpty()) {
+                    onChildMenuItemClick(childMenuItem)
+                }
+            }
+        }
     }
-
 
     override fun getItemCount(): Int = menuItems.size
 
@@ -65,14 +71,7 @@ class MenuAdapter(
 
         fun bind(mainMenuItem: MainMenuItem) {
             titleTextView.text = mainMenuItem.title
-
-            // Child menü elemek beállítása
-            if (mainMenuItem.childs?.isNotEmpty() == true) {
-                submenuRecyclerView.layoutManager = LinearLayoutManager(itemView.context)
-                submenuRecyclerView.adapter = ChildMenuAdapter(mainMenuItem.childs) { childMenuItem ->
-                    onChildMenuItemClick(childMenuItem)
-                }
-            }
         }
     }
 }
+
