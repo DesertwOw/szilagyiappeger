@@ -12,6 +12,8 @@ constraintlayout = "2.1.4"
 lifecycleViewmodelKtx = "2.8.6"
 hilt = "2.51.1"
 kotlinx-coroutines = "1.9.0-RC.2"
+
+# Gson
 gson = "2.10.1"
 
 # Firebase Services
@@ -24,10 +26,12 @@ firebase-messaging = "24.0.1"
 gms-googleServices = "4.4.2"
 firebaseStorageKtx = "21.0.0"
 firebaseCrashlyticsBuildtools = "3.0.2"
-recyclerview = "1.3.2"
 
 #Recycle View
+recyclerview = "1.3.2"
 
+#Swipe to Refresh
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,9 +65,14 @@ google-dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-androi
 
 # ViewModel
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+
 # Gson
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+
+#Swipe to Refresh
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
