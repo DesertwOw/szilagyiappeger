@@ -1,10 +1,12 @@
 package hu.radosdev.szilagyiapp.menu
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hu.radosdev.szilagyiapp.R
@@ -45,7 +47,8 @@ class MenuAdapter(
                 adapterPosition  // Expand the new item
             }
 
-            notifyItemChanged(adapterPosition)
+            // Notify all items to refresh their highlight state
+            notifyDataSetChanged()
         }
 
         // Update submenu visibility based on whether the item is expanded or collapsed
@@ -62,12 +65,27 @@ class MenuAdapter(
         if (isExpanded) {
             holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
             holder.submenuRecyclerView.adapter = ChildMenuAdapter(menuItem.childs ?: emptyList()) { childMenuItem ->
-                if (childMenuItem.url.isNotEmpty()) {
-                    onChildMenuItemClick(childMenuItem)
-                }
+                // Handle submenu item clicks
+                onChildMenuItemClick(childMenuItem)
+
+                // Reset highlights for all main menu items when a submenu item is clicked
+                expandedPosition = RecyclerView.NO_POSITION  // Collapse all
+                notifyDataSetChanged()  // Refresh the entire list
             }
         }
+
+        // Reset background color for all items and highlight the selected one
+        holder.titleTextView.setBackgroundColor(
+            if (holder.adapterPosition == expandedPosition) {
+                // Set the background color for the expanded item
+                ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange) // Replace with your highlight color
+            } else {
+                // Reset to default background color
+                Color.TRANSPARENT // or your default background color
+            }
+        )
     }
+
     fun updateMenu(items: List<MainMenuItem>) {
         menuItems = items
         notifyDataSetChanged()
