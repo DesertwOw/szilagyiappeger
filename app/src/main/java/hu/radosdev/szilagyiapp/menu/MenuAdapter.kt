@@ -3,6 +3,7 @@ package hu.radosdev.szilagyiapp.menu
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,68 +28,72 @@ class MenuAdapter(
         val menuItem = menuItems[position]
         holder.bind(menuItem)
 
-        holder.itemView.setOnClickListener {
+        // Click listener for expanding/collapsing the submenu via the icon only
+        holder.expandIcon.setOnClickListener {
             val adapterPosition = holder.adapterPosition
-            if (adapterPosition != RecyclerView.NO_POSITION) {
-                // Toggle the expanded state for main menu items
-                val wasExpanded = expandedPosition == adapterPosition
-                expandedPosition = if (wasExpanded) {
-                    RecyclerView.NO_POSITION // Collapse if already expanded
-                } else {
-                    adapterPosition // Expand the selected item
-                }
+            val wasExpanded = expandedPosition == adapterPosition
 
-                notifyItemChanged(adapterPosition) // Update the current item
-                if (wasExpanded) {
-                    notifyItemChanged(expandedPosition) // Collapse the previous expanded item
-                } else {
-                    notifyItemRangeChanged(adapterPosition + 1, itemCount - (adapterPosition + 1)) // Refresh items below
-                }
-                onMainMenuItemClick(menuItem)
+            // Collapse previously expanded item if necessary
+            if (expandedPosition != RecyclerView.NO_POSITION) {
+                notifyItemChanged(expandedPosition)
             }
+
+            // Toggle expansion for the clicked item
+            expandedPosition = if (wasExpanded) {
+                RecyclerView.NO_POSITION  // Collapse if it was expanded
+            } else {
+                adapterPosition  // Expand the new item
+            }
+
+            notifyItemChanged(adapterPosition)
         }
 
-        // Set visibility and animation for submenu
+        // Update submenu visibility based on whether the item is expanded or collapsed
         val isExpanded = holder.adapterPosition == expandedPosition
         holder.submenuRecyclerView.visibility = if (isExpanded) View.VISIBLE else View.GONE
 
-        // Animate submenu visibility
+        // Animate submenu visibility (expand/collapse)
         if (isExpanded) {
             holder.submenuRecyclerView.alpha = 0f
-            holder.submenuRecyclerView.visibility = View.VISIBLE
             holder.submenuRecyclerView.animate().alpha(1f).setDuration(300).start()
-        } else {
-            holder.submenuRecyclerView.animate().alpha(0f).setDuration(300).withEndAction {
-                holder.submenuRecyclerView.visibility = View.GONE
-            }.start()
         }
 
-        // Setup child menu items adapter only if expanded
+        // Set up submenu adapter if expanded
         if (isExpanded) {
             holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
             holder.submenuRecyclerView.adapter = ChildMenuAdapter(menuItem.childs ?: emptyList()) { childMenuItem ->
-                // Handle child menu item click
                 if (childMenuItem.url.isNotEmpty()) {
                     onChildMenuItemClick(childMenuItem)
                 }
             }
         }
     }
-
-    override fun getItemCount(): Int = menuItems.size
-
     fun updateMenu(items: List<MainMenuItem>) {
         menuItems = items
         notifyDataSetChanged()
     }
 
+    override fun getItemCount(): Int = menuItems.size
+
     inner class MenuViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val titleTextView: TextView = itemView.findViewById(R.id.menu_item_title)
+        val titleTextView: TextView = itemView.findViewById(R.id.menu_item_title)
+        val expandIcon: ImageView = itemView.findViewById(R.id.menu_item_expand_icon)
         val submenuRecyclerView: RecyclerView = itemView.findViewById(R.id.submenu_recycler_view)
 
         fun bind(mainMenuItem: MainMenuItem) {
             titleTextView.text = mainMenuItem.title
+
+            // Show the expand/collapse icon only if there are child items
+            if (mainMenuItem.childs != null && mainMenuItem.childs.isNotEmpty()) {
+                expandIcon.visibility = View.VISIBLE
+                val isExpanded = adapterPosition == expandedPosition
+
+                // Rotate icon based on expanded/collapsed state
+                expandIcon.rotation = if (isExpanded) 180f else 0f
+                expandIcon.animate().rotation(if (isExpanded) 180f else 0f).setDuration(300).start()
+            } else {
+                expandIcon.visibility = View.GONE
+            }
         }
     }
 }
-
