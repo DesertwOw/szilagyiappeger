@@ -8,6 +8,7 @@
 
     <!-- Main content -->
     <LinearLayout
+        android:id="@+id/root_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -59,6 +60,11 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
+        <!-- In-App Notification Layout -->
+        <include
+            android:id="@+id/in_app_notification_layout"
+            layout="@layout/in_app_notification" />
+
         <WebView
             android:id="@+id/webview"
             android:layout_width="match_parent"
@@ -86,8 +92,8 @@
             android:id="@+id/menu_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-        android:layout_weight="1"
-        android:scrollbars="vertical"/>
+            android:layout_weight="1"
+            android:scrollbars="vertical" />
     </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>

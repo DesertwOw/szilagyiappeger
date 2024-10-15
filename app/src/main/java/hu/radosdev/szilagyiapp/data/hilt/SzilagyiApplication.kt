@@ -5,6 +5,8 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class SzilagyiApplication : Application() {
-
-
+    override fun onCreate() {
+        super.onCreate()
+        registerActivityLifecycleCallbacks(ActivityTracker)
+    }
 }

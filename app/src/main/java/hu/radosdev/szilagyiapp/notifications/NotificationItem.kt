@@ -1,4 +1,9 @@
-package hu.radosdev.szilagyiapp.notifications
+    package hu.radosdev.szilagyiapp.notifications
 
-data class NotificationItem(val icon: Int, val title: String, val timestamp: String)
-
+    data class NotificationItem(
+        val id: Int,
+        val icon: Int,
+        val title: String,
+        val timestamp: String,
+        val url: String? = null
+    )

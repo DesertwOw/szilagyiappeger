@@ -19,6 +19,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
+import hu.radosdev.szilagyiapp.data.fcm.InAppMessageManager
 import hu.radosdev.szilagyiapp.menu.MenuAdapter
 import hu.radosdev.szilagyiapp.menu.MenuViewModel
 import hu.radosdev.szilagyiapp.notifications.NotificationActivity
@@ -34,10 +35,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var menuAdapter: MenuAdapter
     private val TAG = "FCM"
     private val defaultUrl = "https://www.szilagyi-eger.hu/" // Default URL
+    private lateinit var inAppMessageManager: InAppMessageManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        inAppMessageManager = InAppMessageManager()
+        inAppMessageManager.initialize(findViewById(R.id.in_app_notification_layout))
+
+
 
         // Set up drawer layout and menu icon for toggling
         drawerLayout = findViewById(R.id.drawer_layout)
@@ -64,6 +72,12 @@ class MainActivity : AppCompatActivity() {
 
         // WebView setup
         setupWebView()
+
+        menuViewModel.loadMenuItems()
+        menuViewModel.menuItems.observe(this){
+            items: List<MainMenuItem> ->
+            menuAdapter.updateMenu(items)
+        }
 
         // Fetch FCM token in background
         lifecycleScope.launch {
