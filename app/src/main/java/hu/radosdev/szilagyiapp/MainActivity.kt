@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         // Set up RecyclerView for menu items
         val recyclerView = findViewById<RecyclerView>(R.id.menu_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        menuAdapter = MenuAdapter(emptyList(), ::handleMenuItemClick, ::handleChildMenuItemClick)
+        menuAdapter = MenuAdapter(emptyList(), ::handleMenuItemClick, ::handleChildMenuItemClick,this)
         recyclerView.adapter = menuAdapter
 
         // WebView setup
