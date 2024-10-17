@@ -11,6 +11,8 @@ android {
     namespace = "hu.radosdev.szilagyiapp"
     compileSdk = 34
 
+
+
     defaultConfig {
         applicationId = "hu.radosdev.szilagyiapp"
         minSdk = 24
@@ -19,6 +21,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+
+
     }
 
     viewBinding {

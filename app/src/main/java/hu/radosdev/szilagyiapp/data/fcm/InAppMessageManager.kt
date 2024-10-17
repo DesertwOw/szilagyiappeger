@@ -1,7 +1,5 @@
 package hu.radosdev.szilagyiapp.data.fcm
 
-
-
 import android.view.View
 import android.widget.TextView
 import hu.radosdev.szilagyiapp.R
@@ -23,9 +21,8 @@ class InAppMessageManager {
         messageView?.text = message
         messageLayout?.visibility = View.VISIBLE
 
-        // Hide the message after a delay
         messageLayout?.postDelayed({
             messageLayout?.visibility = View.GONE
-        }, 3000) // Adjust the duration as needed
+        }, 3000)
     }
 }

@@ -4,14 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
 import hu.radosdev.szilagyiapp.MainActivity
 import hu.radosdev.szilagyiapp.R
 import hu.radosdev.szilagyiapp.data.repositories.MenuRepository
+import hu.radosdev.szilagyiapp.util.Constants
 import hu.radosdev.szilagyiapp.util.ErrorActivity
 import hu.radosdev.szilagyiapp.util.NetworkUtil
 import kotlinx.coroutines.CoroutineScope
@@ -22,45 +20,58 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
 
+    companion object {
+        private var activeInstance: SplashActivity? = null
+
+        fun finishIfActive() {
+            activeInstance?.finish()
+        }
+    }
+
     @Inject
     lateinit var menuRepository: MenuRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        val isLoadingScreen = intent.getBooleanExtra(Constants.IS_LOADING_SCREEN, false)
+
         setContentView(R.layout.activity_splash)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            // Check for internet connection first
-            if (NetworkUtil.isNetworkAvailable(this)) {
-                // Proceed to fetch menu from Firebase
-                CoroutineScope(Dispatchers.Main).launch {
-                    val menu = menuRepository.fetchMenu()
-                    if (menu != null) {
-                        // Navigate to MainActivity if everything is fine
-                        startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-                        finish()
-                    } else {
-                        // Backend failure, navigate to error screen with dynamic message
-                        val intent = Intent(this@SplashActivity, ErrorActivity::class.java)
-                        intent.putExtra("error_message", "Backend failure. Please try again later.")
-                        startActivity(intent)
-                        finish()
+        if (!isLoadingScreen) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (NetworkUtil.isNetworkAvailable(this)) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val menu = menuRepository.fetchMenu()
+                        if (menu != null) {
+                            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                            finish()
+                        } else {
+                            val intent = Intent(this@SplashActivity, ErrorActivity::class.java)
+                            intent.putExtra(Constants.ERROR_ARG, Constants.URL_JSON_LOAD_ERROR)
+                            startActivity(intent)
+                            finish()
+                        }
                     }
+                } else {
+                    val intent = Intent(this, ErrorActivity::class.java)
+                    intent.putExtra(Constants.ERROR_ARG, Constants.NO_INTERNET_CONNECTION_DEFAULT_STRING)
+                    startActivity(intent)
+                    finish()
                 }
-            } else {
-                // No internet connection, navigate to error screen with appropriate message
-                val intent = Intent(this, ErrorActivity::class.java)
-                intent.putExtra("error_message", "No internet connection. Please check and try again.")
-                startActivity(intent)
-                finish()
-            }
-        }, 2000)
+            }, Constants.SPLASH_DELAY)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        activeInstance = this
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (activeInstance === this) {
+            activeInstance = null
+        }
     }
 }

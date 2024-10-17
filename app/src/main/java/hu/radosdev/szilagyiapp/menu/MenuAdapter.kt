@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,12 +17,14 @@ import androidx.recyclerview.widget.RecyclerView
 import hu.radosdev.szilagyiapp.R
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
+import hu.radosdev.szilagyiapp.util.Constants
 
 class MenuAdapter(
     private var menuItems: List<MainMenuItem>,
-    private val onMainMenuItemClick: (MainMenuItem) -> Unit,
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit,
-    private val context: Context // Add context parameter
+    private val context: Context,
+    private val showLoadingScreen: () -> Unit,
+    private val hideLoadingScreen: () -> Unit
 ) : RecyclerView.Adapter<MenuAdapter.MenuViewHolder>() {
 
     private var expandedPosition: Int = RecyclerView.NO_POSITION
@@ -34,76 +38,65 @@ class MenuAdapter(
         val menuItem = menuItems[position]
         holder.bind(menuItem)
 
-        // Click listener for expanding/collapsing the submenu via the icon only
         holder.expandIcon.setOnClickListener {
-            val adapterPosition = holder.adapterPosition
+            val adapterPosition = holder.bindingAdapterPosition
             val wasExpanded = expandedPosition == adapterPosition
 
-            // Collapse previously expanded item if necessary
             if (expandedPosition != RecyclerView.NO_POSITION) {
                 notifyItemChanged(expandedPosition)
             }
 
-            // Toggle expansion for the clicked item
             expandedPosition = if (wasExpanded) {
-                RecyclerView.NO_POSITION  // Collapse if it was expanded
+                RecyclerView.NO_POSITION
             } else {
-                adapterPosition  // Expand the new item
+                adapterPosition
             }
 
-            // Notify all items to refresh their highlight state
-            notifyDataSetChanged()
+            notifyItemChanged(expandedPosition)
         }
 
-        // Update submenu visibility based on whether the item is expanded or collapsed
-        val isExpanded = holder.adapterPosition == expandedPosition
+        val isExpanded = holder.bindingAdapterPosition == expandedPosition
         holder.submenuRecyclerView.visibility = if (isExpanded) View.VISIBLE else View.GONE
 
-        // Animate submenu visibility (expand/collapse)
         if (isExpanded) {
-            holder.submenuRecyclerView.alpha = 0f
-            holder.submenuRecyclerView.animate().alpha(1f).setDuration(300).start()
+            holder.submenuRecyclerView.alpha = Constants.SUBMENU_RECYCLER_VIEW_ALPHA
+            holder.submenuRecyclerView.animate().alpha(1f).setDuration(Constants.ANIMATE_DURATION).start()
         }
 
-        // Set up submenu adapter if expanded
         if (isExpanded) {
             holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
             holder.submenuRecyclerView.adapter = ChildMenuAdapter(menuItem.childs ?: emptyList()) { childMenuItem ->
-                // Check if the child menu item has a URL and whether it includes "szilagyi"
-                val url = childMenuItem.url // Assuming there's a url property in ChildMenuItem
-                if (url != null && !url.contains("szilagyi")) {
-                    // Open in default browser
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    context.startActivity(intent)
-                } else {
-                    // Proceed with the onChildMenuItemClick action
-                    onChildMenuItemClick(childMenuItem)
-                }
+                showLoadingScreen()
 
-                // Reset highlights for all main menu items when a submenu item is clicked
-                expandedPosition = RecyclerView.NO_POSITION  // Collapse all
-                notifyDataSetChanged()  // Refresh the entire list
+                Handler(Looper.getMainLooper()).postDelayed({
+                    val url = childMenuItem.url
+                    if (!url.contains(Constants.CONTAINS_URL_STRING)) {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                    } else {
+                        onChildMenuItemClick(childMenuItem)
+                    }
+
+                    hideLoadingScreen()
+
+                    expandedPosition = RecyclerView.NO_POSITION
+                    notifyItemChanged(holder.bindingAdapterPosition)
+                }, Constants.SPLASH_DELAY)
             }
         }
 
-        // Reset background color for all items and highlight the selected one
         holder.titleTextView.setBackgroundColor(
-            if (holder.adapterPosition == expandedPosition) {
-                // Set the background color for the expanded item
-                ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange) // Replace with your highlight color
+            if (holder.bindingAdapterPosition == expandedPosition) {
+                ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange)
             } else {
-                // Reset to default background color
-                Color.TRANSPARENT // or your default background color
+                Color.TRANSPARENT
             }
         )
 
-        // Change the background of the expandIcon based on expanded state
         holder.expandIcon.setBackgroundColor(
-            if (holder.adapterPosition == expandedPosition) {
-                // Set the background color when expanded
-                ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange) // Use the same or a different color for the icon
+            if (holder.bindingAdapterPosition == expandedPosition) {
+                ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange)
             } else {
-                // Reset the background color when collapsed
                 Color.TRANSPARENT
             }
         )
@@ -124,14 +117,12 @@ class MenuAdapter(
         fun bind(mainMenuItem: MainMenuItem) {
             titleTextView.text = mainMenuItem.title
 
-            // Show the expand/collapse icon only if there are child items
-            if (mainMenuItem.childs != null && mainMenuItem.childs.isNotEmpty()) {
+            if (!mainMenuItem.childs.isNullOrEmpty()) {
                 expandIcon.visibility = View.VISIBLE
-                val isExpanded = adapterPosition == expandedPosition
+                val isExpanded = bindingAdapterPosition == expandedPosition
 
-                // Rotate icon based on expanded/collapsed state
-                expandIcon.rotation = if (isExpanded) 180f else 0f
-                expandIcon.animate().rotation(if (isExpanded) 180f else 0f).setDuration(300).start()
+                expandIcon.rotation = if (isExpanded) Constants.ANIMATE_ANGLE else Constants.SUBMENU_RECYCLER_VIEW_ALPHA
+                expandIcon.animate().rotation(if (isExpanded) Constants.ANIMATE_ANGLE else Constants.SUBMENU_RECYCLER_VIEW_ALPHA).setDuration(Constants.ANIMATE_DURATION).start()
             } else {
                 expandIcon.visibility = View.GONE
             }

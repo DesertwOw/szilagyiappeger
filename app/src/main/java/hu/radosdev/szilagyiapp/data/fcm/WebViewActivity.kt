@@ -5,6 +5,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import hu.radosdev.szilagyiapp.R
+import hu.radosdev.szilagyiapp.util.Constants
 
 class WebViewActivity : AppCompatActivity() {
     private lateinit var webView: WebView
@@ -16,8 +17,7 @@ class WebViewActivity : AppCompatActivity() {
         webView = findViewById(R.id.notif_web_view)
         webView.webViewClient = WebViewClient()
 
-        // Az URL átadása az intentből
-        val url = intent.getStringExtra("url")
+        val url = intent.getStringExtra(Constants.URL)
         url?.let {
             webView.loadUrl(it)
         }

@@ -12,22 +12,10 @@ class ErrorFragment : Fragment() {
 
     private lateinit var errorMessage: String
 
-    companion object {
-        private const val ARG_ERROR_MESSAGE = "error_message"
-
-        fun newInstance(errorMessage: String): ErrorFragment {
-            val fragment = ErrorFragment()
-            val args = Bundle()
-            args.putString(ARG_ERROR_MESSAGE, errorMessage)
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            errorMessage = it.getString(ARG_ERROR_MESSAGE).orEmpty()
+            errorMessage = it.getString(Constants.ERROR_ARG).orEmpty()
         }
     }
 

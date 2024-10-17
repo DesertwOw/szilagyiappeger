@@ -1,6 +1,5 @@
 package hu.radosdev.szilagyiapp.data.hilt
 
-
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
@@ -26,21 +25,15 @@ object ActivityTracker : Application.ActivityLifecycleCallbacks {
         currentActivity = WeakReference(activity)
     }
 
-    override fun onActivityPaused(activity: Activity) {
-        // No action needed
-    }
+    override fun onActivityPaused(activity: Activity) {}
 
-    override fun onActivityStopped(activity: Activity) {
-        // No action needed
-    }
+    override fun onActivityStopped(activity: Activity) {}
 
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-        // No action needed
-    }
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
     override fun onActivityDestroyed(activity: Activity) {
         if (currentActivity.get() == activity) {
-            currentActivity.clear() // Clear the reference when the activity is destroyed
+            currentActivity.clear()
         }
     }
 }

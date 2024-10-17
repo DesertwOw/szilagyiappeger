@@ -8,6 +8,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import hu.radosdev.szilagyiapp.data.sharedPreferences.PreferencesManager
+import hu.radosdev.szilagyiapp.util.Constants
 import javax.inject.Singleton
 
 @Module
@@ -17,7 +18,7 @@ object PreferencesModule {
     @Provides
     @Singleton
     fun provideSharedPreferences(application: Application): SharedPreferences {
-        return application.getSharedPreferences("my_preferences", Context.MODE_PRIVATE)
+        return application.getSharedPreferences(Constants.PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
 
     @Provides

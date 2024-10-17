@@ -11,16 +11,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import hu.radosdev.szilagyiapp.R
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
+import hu.radosdev.szilagyiapp.util.Constants
 
 class ChildMenuAdapter(
     private var childMenuItems: List<ChildMenuItem>,
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit
 ) : RecyclerView.Adapter<ChildMenuAdapter.ChildMenuViewHolder>() {
 
-    // Map to track expanded state for each item
     private val expandedChildStates = mutableMapOf<Int, Boolean>()
-
-    // Variable to store the selected item position
     private var selectedPosition: Int? = null
 
     inner class ChildMenuViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -35,111 +33,105 @@ class ChildMenuAdapter(
     }
 
     override fun onBindViewHolder(holder: ChildMenuViewHolder, position: Int) {
-        val childMenuItem = childMenuItems[holder.adapterPosition]
+        val childMenuItem = childMenuItems[holder.bindingAdapterPosition]
         holder.title.text = childMenuItem.title
 
-        // Check if the child has nested sub-items (grandchildren)
         if (childMenuItem.childs?.isNotEmpty() == true) {
-            // Show the expand icon when there are nested items
             holder.expandIcon.visibility = View.VISIBLE
 
-            // Set the rotation of the arrow based on expansion state
-            holder.expandIcon.rotation = if (expandedChildStates[holder.adapterPosition] == true) 180f else 0f
+            holder.expandIcon.rotation = if (expandedChildStates[holder.bindingAdapterPosition] == true) Constants.ANIMATE_ANGLE else Constants.SUBMENU_RECYCLER_VIEW_ALPHA
 
-            // Set background color for the title based on selection and expansion state
-            if (holder.adapterPosition == selectedPosition && expandedChildStates[holder.adapterPosition] == true) {
-                holder.title.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange)) // Highlight color
+            if (holder.bindingAdapterPosition == selectedPosition && expandedChildStates[holder.bindingAdapterPosition] == true) {
+                holder.title.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange))
+                holder.expandIcon.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange))
             } else {
-                holder.title.setBackgroundColor(Color.TRANSPARENT) // Default background
+                holder.title.setBackgroundColor(Color.TRANSPARENT)
+                holder.expandIcon.setBackgroundColor(Color.TRANSPARENT)
             }
 
-            // Handle item click for expanding/collapsing and resetting highlights
             holder.itemView.setOnClickListener {
-                resetHighlights()
+                val previousSelectedPosition = selectedPosition
+                selectedPosition = holder.bindingAdapterPosition
 
-                // Toggle expanded state
-                expandedChildStates[holder.adapterPosition] = expandedChildStates.getOrDefault(holder.adapterPosition, false).not()
+                expandedChildStates[holder.bindingAdapterPosition] = expandedChildStates.getOrDefault(holder.bindingAdapterPosition, false).not()
 
-                // Update selected position and notify adapter
-                selectedPosition = holder.adapterPosition
-                notifyDataSetChanged()
+                if (previousSelectedPosition != null) {
+                    notifyItemChanged(previousSelectedPosition)
+                }
+                notifyItemChanged(holder.bindingAdapterPosition)
             }
 
-            // Handle expand icon click similarly
             holder.expandIcon.setOnClickListener {
-                resetHighlights()
+                val previousSelectedPosition = selectedPosition
+                selectedPosition = holder.bindingAdapterPosition
 
-                // Toggle expanded state when the arrow icon is clicked
-                expandedChildStates[holder.adapterPosition] = expandedChildStates.getOrDefault(holder.adapterPosition, false).not()
+                expandedChildStates[holder.bindingAdapterPosition] = expandedChildStates.getOrDefault(holder.bindingAdapterPosition, false).not()
 
-                // Update selected position and notify adapter
-                selectedPosition = holder.adapterPosition
-                notifyDataSetChanged()
+                if (previousSelectedPosition != null) {
+                    notifyItemChanged(previousSelectedPosition)
+                }
+                notifyItemChanged(holder.bindingAdapterPosition)
             }
 
-            // Setup the nested submenu RecyclerView
             holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
             holder.submenuRecyclerView.adapter = ChildMenuAdapter(childMenuItem.childs) { nestedChildMenuItem ->
                 resetHighlights()
 
-                // Handle submenu item clicks
                 if (nestedChildMenuItem.url.isNotEmpty()) {
                     onChildMenuItemClick(nestedChildMenuItem)
                 }
 
-                // Reset highlights and update selected position
-                selectedPosition = holder.adapterPosition
-                notifyDataSetChanged()
+                val previousSelectedPosition = selectedPosition
+                selectedPosition = holder.bindingAdapterPosition
+
+                if (previousSelectedPosition != null) {
+                    notifyItemChanged(previousSelectedPosition)
+                }
+                notifyItemChanged(holder.bindingAdapterPosition)
             }
 
-            // Show or hide submenu based on expansion state
-            if (expandedChildStates[holder.adapterPosition] == true) {
+            if (expandedChildStates[holder.bindingAdapterPosition] == true) {
                 holder.submenuRecyclerView.visibility = View.VISIBLE
-                holder.submenuRecyclerView.alpha = 0f
-                holder.submenuRecyclerView.animate().alpha(1f).setDuration(300).start()
+                holder.submenuRecyclerView.alpha = Constants.SUBMENU_RECYCLER_VIEW_ALPHA
+                holder.submenuRecyclerView.animate().alpha(1f).setDuration(Constants.ANIMATE_DURATION).start()
             } else {
-                holder.submenuRecyclerView.animate().alpha(0f).setDuration(300).withEndAction {
+                holder.submenuRecyclerView.animate().alpha(Constants.SUBMENU_RECYCLER_VIEW_ALPHA).setDuration(Constants.ANIMATE_DURATION).withEndAction {
                     holder.submenuRecyclerView.visibility = View.GONE
                 }.start()
             }
         } else {
-            // Hide the expand icon if there are no nested items
             holder.expandIcon.visibility = View.GONE
             holder.submenuRecyclerView.visibility = View.GONE
 
-            // Highlight non-expandable items (if selected)
-            if (holder.adapterPosition == selectedPosition) {
+            if (holder.bindingAdapterPosition == selectedPosition) {
                 holder.title.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange))
             } else {
                 holder.title.setBackgroundColor(Color.TRANSPARENT)
             }
         }
 
-        // Handle item click if no sub-items
         holder.itemView.setOnClickListener {
-            resetHighlights()
+            val previousSelectedPosition = selectedPosition
+            selectedPosition = holder.bindingAdapterPosition
 
-            val adapterPosition = holder.adapterPosition
             if (childMenuItem.url.isNotEmpty()) {
                 onChildMenuItemClick(childMenuItem)
             }
 
-            // Update selected position and notify adapter
-            selectedPosition = adapterPosition
-            notifyDataSetChanged()
+            if (previousSelectedPosition != null) {
+                notifyItemChanged(previousSelectedPosition)
+            }
+            notifyItemChanged(holder.bindingAdapterPosition)
         }
     }
 
-    // Reset all highlights and expansion states
     private fun resetHighlights() {
+        val previousSelectedPosition = selectedPosition
         selectedPosition = null
-        expandedChildStates.clear()  // Collapse all expanded items
+        expandedChildStates.clear()
+
+        previousSelectedPosition?.let { notifyItemChanged(it) }
     }
 
     override fun getItemCount(): Int = childMenuItems.size
-
-    fun updateChildMenu(newChildMenuItems: List<ChildMenuItem>) {
-        childMenuItems = newChildMenuItems
-        notifyDataSetChanged()
-    }
 }
