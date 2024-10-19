@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
         val homeIcon = findViewById<ImageView>(R.id.menu_home)
-        val notificationIcon = findViewById<ImageView>(R.id.notifi_icon)
+        //val notificationIcon = findViewById<ImageView>(R.id.notifi_icon)
 
         webView = findViewById(R.id.webview)
 
@@ -73,10 +73,13 @@ class MainActivity : AppCompatActivity() {
             menuAdapter.updateMenu(items)
         }
 
+        /*
         notificationIcon.setOnClickListener {
             val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
         }
+
+         */
     }
 
     private fun showLoadingScreen() {
