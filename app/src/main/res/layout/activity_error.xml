@@ -7,18 +7,30 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/splash"
+        android:layout_marginBottom="24dp" />
+
     <TextView
         android:id="@+id/error_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Error"
+        android:text="Error message"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:maxLines="2"
+        android:ellipsize="end" />
 
     <Button
         android:id="@+id/button_retry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Retry" />
+        android:text="Retry"
+        android:layout_gravity="center"/>
+
 </LinearLayout>
