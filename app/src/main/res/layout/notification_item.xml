@@ -9,7 +9,7 @@
         android:id="@+id/notification_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Notification Title"
+        android:text="@string/notification_title"
         android:textStyle="bold"
         android:textSize="16sp"
         android:textColor="@android:color/black" />
@@ -18,7 +18,7 @@
         android:id="@+id/notification_body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Notification body goes here..."
+        android:text="@string/notification_body"
         android:textSize="14sp"
         android:textColor="@android:color/darker_gray"
         android:layout_marginTop="4dp" />
@@ -27,7 +27,7 @@
         android:id="@+id/notification_timestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Timestamp"
+        android:text="@string/timestamp"
         android:textSize="12sp"
         android:textColor="@android:color/darker_gray"
         android:layout_marginTop="8dp" />

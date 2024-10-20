@@ -34,7 +34,6 @@ class SplashActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
 
-    // Register for notification permission result
     private val notificationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -48,15 +47,15 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash) // Load the splash layout
+        setContentView(R.layout.activity_splash)
 
-        sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        sharedPreferences = getSharedPreferences(Constants.APP_PREFS, MODE_PRIVATE)
 
-        val isFirstLaunch = sharedPreferences.getBoolean("is_first_launch", true)
+        val isFirstLaunch = sharedPreferences.getBoolean(Constants.FIRST_LAUNCH_FLAG, true)
 
         if (isFirstLaunch) {
             checkAndRequestNotificationPermission()
-            sharedPreferences.edit().putBoolean("is_first_launch", false).apply()
+            sharedPreferences.edit().putBoolean(Constants.FIRST_LAUNCH_FLAG, false).apply()
         } else {
             navigateToNextScreen()
         }
@@ -108,15 +107,15 @@ class SplashActivity : AppCompatActivity() {
 
     private fun showPermissionDeniedDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Enable Notifications")
-            .setMessage("To receive important updates, please enable notifications in the settings.")
-            .setPositiveButton("Go to Settings") { _, _ ->
+            .setTitle(Constants.PERMISSION_TITLE)
+            .setMessage(Constants.UPDATE_MESSAGE)
+            .setPositiveButton(Constants.GO_TO_SETTINGS) { _, _ ->
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", packageName, null)
+                    data = Uri.fromParts(Constants.PACKAGE, packageName, null)
                 }
                 startActivity(intent)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(Constants.CANCEL, null)
             .show()
     }
 

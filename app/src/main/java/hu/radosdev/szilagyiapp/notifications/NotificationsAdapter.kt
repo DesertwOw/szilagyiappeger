@@ -15,7 +15,6 @@ class NotificationsAdapter(
     inner class NotificationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(notification: NotificationItem) {
             itemView.findViewById<TextView>(R.id.notification_title).text = notification.title
-            // Set up click listener
             itemView.setOnClickListener { onItemClick(notification) }
         }
     }

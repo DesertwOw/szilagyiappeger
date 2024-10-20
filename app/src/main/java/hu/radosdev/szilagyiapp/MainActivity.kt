@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var menuAdapter: MenuAdapter
     private lateinit var inAppMessageManager: InAppMessageManager
-    private lateinit var progressBar: ProgressBar // Declare ProgressBar
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         val homeIcon = findViewById<ImageView>(R.id.menu_home)
 
         webView = findViewById(R.id.webview)
-        progressBar = findViewById(R.id.progress_bar) // Initialize ProgressBar
+        progressBar = findViewById(R.id.progress_bar)
 
         menuIcon.setOnClickListener { toggleDrawer() }
 
@@ -71,20 +71,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupWebView() {
-        webView.settings.javaScriptEnabled = true // Be cautious with enabling JavaScript
+        webView.settings.javaScriptEnabled = true
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                // Show the ProgressBar when the page starts loading
                 progressBar.visibility = View.VISIBLE
-                webView.visibility = View.GONE // Optionally hide WebView while loading
+                webView.visibility = View.GONE
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                // JavaScript to hide header and breadcrumb
                 val hideElementsScript = """
                 (function() {
                     var header = document.querySelector('header');
@@ -99,30 +97,28 @@ class MainActivity : AppCompatActivity() {
             """.trimIndent()
 
                 webView.evaluateJavascript(hideElementsScript) {
-                    // Hide the ProgressBar when the page finishes loading
                     progressBar.visibility = View.GONE
-                    webView.visibility = View.VISIBLE // Show WebView after loading
+                    webView.visibility = View.VISIBLE
                 }
             }
 
-            // Handle loading errors
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error)
-                // Hide the ProgressBar in case of an error
                 progressBar.visibility = View.GONE
-                // Optionally show an error message or handle the error accordingly
             }
         }
 
         webView.webChromeClient = WebChromeClient()
+
         webView.loadUrl(Constants.BASE_URL)
     }
 
+
     private fun toggleDrawer() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START, true) // Smooth close with animation
+            drawerLayout.closeDrawer(GravityCompat.START, true)
         } else {
-            drawerLayout.openDrawer(GravityCompat.START, true)  // Smooth open with animation
+            drawerLayout.openDrawer(GravityCompat.START, true)
         }
     }
 
