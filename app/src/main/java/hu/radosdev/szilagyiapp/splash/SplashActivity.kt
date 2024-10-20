@@ -29,19 +29,12 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
 
-    companion object {
-        private var activeInstance: SplashActivity? = null
-
-        fun finishIfActive() {
-            activeInstance?.finish()
-        }
-    }
-
     @Inject
     lateinit var menuRepository: MenuRepository
 
     private lateinit var sharedPreferences: SharedPreferences
 
+    // Register for notification permission result
     private val notificationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -55,8 +48,7 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_splash)
+        setContentView(R.layout.activity_splash) // Load the splash layout
 
         sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
 
@@ -104,7 +96,6 @@ class SplashActivity : AppCompatActivity() {
                 != PackageManager.PERMISSION_GRANTED
             ) {
                 notificationPermissionRequest.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                navigateToNextScreen()
             } else {
                 setupNotifications()
                 navigateToNextScreen()
@@ -129,15 +120,4 @@ class SplashActivity : AppCompatActivity() {
             .show()
     }
 
-    override fun onStart() {
-        super.onStart()
-        activeInstance = this
-    }
-
-    override fun onStop() {
-        super.onStop()
-        if (activeInstance === this) {
-            activeInstance = null
-        }
-    }
 }

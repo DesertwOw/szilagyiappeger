@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,9 +20,7 @@ import hu.radosdev.szilagyiapp.util.Constants
 class MenuAdapter(
     private var menuItems: List<MainMenuItem>,
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit,
-    private val context: Context,
-    private val showLoadingScreen: () -> Unit,
-    private val hideLoadingScreen: () -> Unit
+    private val context: Context
 ) : RecyclerView.Adapter<MenuAdapter.MenuViewHolder>() {
 
     private var expandedPosition: Int = RecyclerView.NO_POSITION
@@ -66,22 +62,16 @@ class MenuAdapter(
         if (isExpanded) {
             holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
             holder.submenuRecyclerView.adapter = ChildMenuAdapter(menuItem.childs ?: emptyList()) { childMenuItem ->
-                showLoadingScreen()
+                val url = childMenuItem.url
+                if (!url.contains(Constants.CONTAINS_URL_STRING)) {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    context.startActivity(intent)
+                } else {
+                    onChildMenuItemClick(childMenuItem)
+                }
 
-                Handler(Looper.getMainLooper()).postDelayed({
-                    val url = childMenuItem.url
-                    if (!url.contains(Constants.CONTAINS_URL_STRING)) {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        context.startActivity(intent)
-                    } else {
-                        onChildMenuItemClick(childMenuItem)
-                    }
-
-                    hideLoadingScreen()
-
-                    expandedPosition = RecyclerView.NO_POSITION
-                    notifyItemChanged(holder.bindingAdapterPosition)
-                }, Constants.SPLASH_DELAY)
+                expandedPosition = RecyclerView.NO_POSITION
+                notifyItemChanged(holder.bindingAdapterPosition)
             }
         }
 

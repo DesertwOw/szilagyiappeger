@@ -1,12 +1,14 @@
 package hu.radosdev.szilagyiapp
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ImageView
+import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -19,10 +21,7 @@ import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.data.fcm.InAppMessageManager
 import hu.radosdev.szilagyiapp.menu.MenuAdapter
 import hu.radosdev.szilagyiapp.menu.MenuViewModel
-import hu.radosdev.szilagyiapp.notifications.NotificationActivity
-import hu.radosdev.szilagyiapp.splash.SplashActivity
 import hu.radosdev.szilagyiapp.util.Constants
-
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -32,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var menuAdapter: MenuAdapter
     private lateinit var inAppMessageManager: InAppMessageManager
-
+    private lateinit var progressBar: ProgressBar // Declare ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,9 +43,9 @@ class MainActivity : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
         val homeIcon = findViewById<ImageView>(R.id.menu_home)
-        //val notificationIcon = findViewById<ImageView>(R.id.notifi_icon)
 
         webView = findViewById(R.id.webview)
+        progressBar = findViewById(R.id.progress_bar) // Initialize ProgressBar
 
         menuIcon.setOnClickListener { toggleDrawer() }
 
@@ -60,42 +59,28 @@ class MainActivity : AppCompatActivity() {
             emptyList(),
             ::handleChildMenuItemClick,
             this,
-            ::showLoadingScreen,
-            ::hideLoadingScreen
         )
         recyclerView.adapter = menuAdapter
 
         setupWebView()
 
         menuViewModel.loadMenuItems()
-        menuViewModel.menuItems.observe(this){
-            items: List<MainMenuItem> ->
+        menuViewModel.menuItems.observe(this) { items: List<MainMenuItem> ->
             menuAdapter.updateMenu(items)
         }
-
-        /*
-        notificationIcon.setOnClickListener {
-            val intent = Intent(this, NotificationActivity::class.java)
-            startActivity(intent)
-        }
-
-         */
     }
 
-    private fun showLoadingScreen() {
-        val intent = Intent(this, SplashActivity::class.java)
-        intent.putExtra(Constants.IS_LOADING_SCREEN, true)
-        startActivity(intent)
-    }
-
-    private fun hideLoadingScreen() {
-        SplashActivity.finishIfActive()
-    }
-
-    private fun setupWebView(){
-        webView.settings.javaScriptEnabled = true
+    private fun setupWebView() {
+        webView.settings.javaScriptEnabled = true // Be cautious with enabling JavaScript
 
         webView.webViewClient = object : WebViewClient() {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                // Show the ProgressBar when the page starts loading
+                progressBar.visibility = View.VISIBLE
+                webView.visibility = View.GONE // Optionally hide WebView while loading
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
@@ -114,8 +99,18 @@ class MainActivity : AppCompatActivity() {
             """.trimIndent()
 
                 webView.evaluateJavascript(hideElementsScript) {
-                    webView.visibility = View.VISIBLE
+                    // Hide the ProgressBar when the page finishes loading
+                    progressBar.visibility = View.GONE
+                    webView.visibility = View.VISIBLE // Show WebView after loading
                 }
+            }
+
+            // Handle loading errors
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error)
+                // Hide the ProgressBar in case of an error
+                progressBar.visibility = View.GONE
+                // Optionally show an error message or handle the error accordingly
             }
         }
 
@@ -125,9 +120,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun toggleDrawer() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
+            drawerLayout.closeDrawer(GravityCompat.START, true) // Smooth close with animation
         } else {
-            drawerLayout.openDrawer(GravityCompat.START)
+            drawerLayout.openDrawer(GravityCompat.START, true)  // Smooth open with animation
         }
     }
 
@@ -135,7 +130,4 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl(childMenuItem.url)
         toggleDrawer()
     }
-
 }
-
-

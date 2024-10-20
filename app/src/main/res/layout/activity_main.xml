@@ -45,9 +45,6 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="10"
                         android:src="@drawable/menu_home" />
-
-
-
                 </LinearLayout>
 
             </androidx.appcompat.widget.Toolbar>
@@ -59,11 +56,25 @@
             android:id="@+id/in_app_notification_layout"
             layout="@layout/in_app_notification" />
 
-        <WebView
-            android:id="@+id/webview"
+        <!-- Overlay for WebView and ProgressBar -->
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1">
+
+            <WebView
+                android:id="@+id/webview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+            android:visibility="gone" />
+        </FrameLayout>
+
     </LinearLayout>
 
     <!-- Navigation Drawer content -->

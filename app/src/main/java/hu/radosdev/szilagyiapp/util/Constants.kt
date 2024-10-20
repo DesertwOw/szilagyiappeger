@@ -14,6 +14,6 @@ class Constants {
         const val ANIMATE_ANGLE = 180f
         const val URL_JSON_LOAD_ERROR = "\"Firebase menu load failure. Please try again later.\""
         const val SPLASH_DELAY = 2000L
-        const val IS_LOADING_SCREEN = "isLoadingScreen"
+        const val LOADING_DELAY = 2000L
     }
 }
