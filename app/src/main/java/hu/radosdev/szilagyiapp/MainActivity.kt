@@ -1,6 +1,7 @@
 package hu.radosdev.szilagyiapp
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -15,6 +16,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
@@ -39,6 +41,18 @@ class MainActivity : AppCompatActivity() {
 
         inAppMessageManager = InAppMessageManager()
         inAppMessageManager.initialize(findViewById(R.id.in_app_notification_layout))
+
+        // Firebase token retrieval
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("MainActivity", "Fetching FCM token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get the token
+            val token = task.result
+            Log.d("MainActivity", "FCM Token: $token")
+        }
 
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)

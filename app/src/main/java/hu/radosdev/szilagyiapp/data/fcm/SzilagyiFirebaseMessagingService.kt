@@ -26,7 +26,6 @@ import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
 import hu.radosdev.szilagyiapp.R
 import hu.radosdev.szilagyiapp.data.hilt.ActivityTracker
-import hu.radosdev.szilagyiapp.data.sharedPreferences.PreferencesManager
 import hu.radosdev.szilagyiapp.notifications.NotificationItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,8 +36,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SzilagyiFirebaseMessagingService : FirebaseMessagingService() {
 
-    @Inject
-    lateinit var preferencesManager: PreferencesManager
 
     companion object {
         private const val CHANNEL_ID = "my_channel_id"
@@ -76,8 +73,6 @@ class SzilagyiFirebaseMessagingService : FirebaseMessagingService() {
 
             Log.d(TAG, "Notification item created: $notificationItem")
 
-            // Save the notification
-            saveNotification(notificationItem)
 
             if (isAppInForeground()) {
                 Log.d(TAG, "App is in foreground, showing in-app notification.")
@@ -89,12 +84,6 @@ class SzilagyiFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    private fun saveNotification(notificationItem: NotificationItem) {
-        val currentNotifications = preferencesManager.getNotifications().toMutableList()
-        currentNotifications.add(notificationItem)
-        preferencesManager.saveNotifications(currentNotifications)
-        Log.d(TAG, "Notification saved: $notificationItem")
-    }
 
     private fun isAppInForeground(): Boolean {
         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager

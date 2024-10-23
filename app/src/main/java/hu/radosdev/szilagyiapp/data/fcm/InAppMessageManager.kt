@@ -16,13 +16,4 @@ class InAppMessageManager {
         messageView = messageLayout.findViewById(R.id.in_app_notification_message)
     }
 
-    fun showInAppMessage(title: String, message: String) {
-        titleView?.text = title
-        messageView?.text = message
-        messageLayout?.visibility = View.VISIBLE
-
-        messageLayout?.postDelayed({
-            messageLayout?.visibility = View.GONE
-        }, 3000)
-    }
 }
