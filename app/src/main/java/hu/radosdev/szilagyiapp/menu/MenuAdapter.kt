@@ -12,18 +12,26 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import hu.radosdev.szilagyiapp.MainActivity
 import hu.radosdev.szilagyiapp.R
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
+import hu.radosdev.szilagyiapp.supporters.SupportersActivity
 import hu.radosdev.szilagyiapp.util.Constants
 
 class MenuAdapter(
-    private var menuItems: List<MainMenuItem>,
+    private var menuItems: MutableList<MainMenuItem>, // Change to MutableList
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit,
     private val context: Context
 ) : RecyclerView.Adapter<MenuAdapter.MenuViewHolder>() {
 
     private var expandedPosition: Int = RecyclerView.NO_POSITION
+
+    init {
+        // Add "Támogatók" menu item
+        val supportersItem = MainMenuItem(title = "Támogatóink", childs = null) // No child items
+        menuItems.add(supportersItem) // Add it to the end of the list
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.menu_item, parent, false)
@@ -34,22 +42,27 @@ class MenuAdapter(
         val menuItem = menuItems[position]
         holder.bind(menuItem)
 
-        holder.expandIcon.setOnClickListener {
-            val adapterPosition = holder.bindingAdapterPosition
-            val wasExpanded = expandedPosition == adapterPosition
+        holder.itemView.setOnClickListener {
+            if (menuItem.title == "Támogatóink") {
+                val intent = Intent(context, SupportersActivity::class.java)
+                context.startActivity(intent)
+            } else {
+                val wasExpanded = expandedPosition == holder.bindingAdapterPosition
 
-            if (expandedPosition != RecyclerView.NO_POSITION) {
+                if (expandedPosition != RecyclerView.NO_POSITION) {
+                    notifyItemChanged(expandedPosition)
+                }
+
+                expandedPosition = if (wasExpanded) {
+                    RecyclerView.NO_POSITION
+                } else {
+                    holder.bindingAdapterPosition
+                }
+
                 notifyItemChanged(expandedPosition)
             }
-
-            expandedPosition = if (wasExpanded) {
-                RecyclerView.NO_POSITION
-            } else {
-                adapterPosition
-            }
-
-            notifyItemChanged(expandedPosition)
         }
+
 
         val isExpanded = holder.bindingAdapterPosition == expandedPosition
         holder.submenuRecyclerView.visibility = if (isExpanded) View.VISIBLE else View.GONE
@@ -59,19 +72,28 @@ class MenuAdapter(
             holder.submenuRecyclerView.animate().alpha(1f).setDuration(Constants.ANIMATE_DURATION).start()
         }
 
-        if (isExpanded) {
-            holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
-            holder.submenuRecyclerView.adapter = ChildMenuAdapter(menuItem.childs ?: emptyList()) { childMenuItem ->
-                val url = childMenuItem.url
-                if (!url.contains(Constants.CONTAINS_URL_STRING)) {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    context.startActivity(intent)
-                } else {
-                    onChildMenuItemClick(childMenuItem)
-                }
+        // Add a special handling for "Főoldal"
+        if (menuItem.title == "FŐOLDAL") {
+            holder.itemView.setOnClickListener {
+                // Here we can create a ChildMenuItem for "FŐOLDAL"
+                val childMenuItem = ChildMenuItem(url = "https://www.szilagyi-eger.hu", title = "FŐOLDAL", childs = null)
+                onChildMenuItemClick(childMenuItem)  // Use the same callback to handle URL opening
+            }
+        } else {
+            if (isExpanded) {
+                holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
+                holder.submenuRecyclerView.adapter = ChildMenuAdapter(menuItem.childs ?: emptyList()) { childMenuItem ->
+                    val url = childMenuItem.url
+                    if (!url.contains(Constants.CONTAINS_URL_STRING)) {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                    } else {
+                        onChildMenuItemClick(childMenuItem)
+                    }
 
-                expandedPosition = RecyclerView.NO_POSITION
-                notifyItemChanged(holder.bindingAdapterPosition)
+                    expandedPosition = RecyclerView.NO_POSITION
+                    notifyItemChanged(holder.bindingAdapterPosition)
+                }
             }
         }
 
@@ -93,7 +115,7 @@ class MenuAdapter(
     }
 
     fun updateMenu(items: List<MainMenuItem>) {
-        menuItems = items
+        menuItems = items.toMutableList() // Ensure it's mutable again
         notifyDataSetChanged()
     }
 
