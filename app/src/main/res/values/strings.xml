@@ -9,4 +9,6 @@
     <string name="notification_title">Értesítés fejléc</string>
     <string name="notification_body">Értesítés tartalom</string>
     <string name="timestamp">Időbéllyeg</string>
+    <string name="supporters">Támogatók:</string>
+    <string name="ev">Cserháti Gabriella e.v.</string>
 </resources>
