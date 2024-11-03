@@ -67,7 +67,6 @@ dependencies {
     kapt(libs.google.dagger.hilt.compiler)
     implementation(libs.gson)
     implementation(libs.firebase.messaging)
-    implementation(libs.swiperefreshlayout)
 }
 
 kapt {

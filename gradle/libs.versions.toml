@@ -1,7 +1,6 @@
 [versions]
 agp = "8.6.1"
 kotlin = "1.9.23"
-kapt = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -31,10 +30,6 @@ firebaseCrashlyticsBuildtools = "3.0.2"
 #Recycle View
 recyclerview = "1.3.2"
 
-#Swipe to Refresh
-swiperefreshlayout = "1.1.0"
-roomCommon = "2.6.1"
-roomKtx = "2.6.1"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
@@ -73,11 +68,6 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 # Gson
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
-
-#Swipe to Refresh
-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
-androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 
 [plugins]
