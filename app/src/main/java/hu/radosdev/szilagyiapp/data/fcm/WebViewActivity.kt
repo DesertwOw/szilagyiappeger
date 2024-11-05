@@ -40,15 +40,19 @@ class WebViewActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                // Inject JavaScript to hide unwanted elements
                 val hideElementsScript = """
                     (function() {
                         var header = document.querySelector('header');
                         if (header) header.style.display = 'none';
                         var breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
                         if (breadcrumbNav) breadcrumbNav.style.display = 'none';
+                
+                        // Additional code to hide specified elements
+                        document.getElementsByClassName('container')[0].style.display='none'; 
+                        document.querySelector('.bg-brown').style.display='none'; 
                     })();
                 """.trimIndent()
+
 
                 webView.evaluateJavascript(hideElementsScript) {
                     progressBar.visibility = View.GONE

@@ -104,16 +104,16 @@ class MainActivity : AppCompatActivity() {
 
                 // Hide specific elements after the page has loaded
                 val hideElementsScript = """
-                (function() {
-                    var header = document.querySelector('header');
-                    if (header) {
-                        header.style.display = 'none';
-                    }
-                    var breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
-                    if (breadcrumbNav) {
-                        breadcrumbNav.style.display = 'none';
-                    }
-                })();
+                    (function() {
+                        var header = document.querySelector('header');
+                        if (header) header.style.display = 'none';
+                        var breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
+                        if (breadcrumbNav) breadcrumbNav.style.display = 'none';
+                
+                        // Additional code to hide specified elements
+                        document.getElementsByClassName('container')[0].style.display='none'; 
+                        document.querySelector('.bg-brown').style.display='none'; 
+                    })();
                 """.trimIndent()
 
                 webView.evaluateJavascript(hideElementsScript) {
@@ -151,8 +151,8 @@ class MainActivity : AppCompatActivity() {
         // Create an animation to scale the logo
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
             menuLogo,
-            PropertyValuesHolder.ofFloat("scaleX", 1.5f), // Scale up in X direction
-            PropertyValuesHolder.ofFloat("scaleY", 1.5f)  // Scale up in Y direction
+            PropertyValuesHolder.ofFloat("scaleX", 1.2f), // Scale up in X direction
+            PropertyValuesHolder.ofFloat("scaleY", 1.2f)  // Scale up in Y direction
         ).setDuration(300) // Duration of the animation
 
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
