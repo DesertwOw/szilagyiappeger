@@ -48,16 +48,6 @@ class MainActivity : AppCompatActivity() {
         inAppMessageManager = InAppMessageManager()
         inAppMessageManager.initialize(findViewById(R.id.in_app_notification_layout))
 
-        // Firebase token retrieval
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("MainActivity", "Fetching FCM token failed", task.exception)
-                return@addOnCompleteListener
-            }
-            // Get the token
-            val token = task.result
-            Log.d("MainActivity", "FCM Token: $token")
-        }
 
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
@@ -178,7 +168,7 @@ class MainActivity : AppCompatActivity() {
         // Add a listener to load the URL after the animation
         animationSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                webView.loadUrl("https://www.szilagyi-eger.hu")
+                webView.loadUrl(Constants.BASE_URL)
             }
         })
 
