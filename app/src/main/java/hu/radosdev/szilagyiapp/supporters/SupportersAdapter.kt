@@ -36,15 +36,12 @@ class SupportersAdapter(private val context: Context, private val supporters: Li
 
         nameTextView.text = supporter.name
 
-        // Set the image or placeholder
         if (supporter.drawableRes != null) {
             logoImageView.setImageResource(supporter.drawableRes)
         }
 
-        // Set an OnClickListener on the entire item view
         view.setOnClickListener {
             supporter.url?.let { url ->
-                // Start an Intent to open the URL in a web browser
                 val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 context.startActivity(browserIntent)
             }

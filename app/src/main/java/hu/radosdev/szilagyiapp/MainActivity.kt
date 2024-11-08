@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
-        val homeIcon = findViewById<ImageView>(R.id.menu_home)
+        val homeIcon = findViewById<ImageView>(R.id.home)
         val menuLogo = findViewById<ImageView>(R.id.menu_logo)
 
         // Set up WebView and ProgressBar
@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         menuViewModel.menuItems.observe(this) { items: List<MainMenuItem> ->
             val updatedItems = items.toMutableList()
             // Add "Támogatók" item to the list
-            updatedItems.add(MainMenuItem(title = "Támogatók", childs = null))
+            updatedItems.add(MainMenuItem(title = "TÁMOGATÓINK", childs = null))
             menuAdapter.updateMenu(updatedItems)
         }
 

@@ -28,9 +28,8 @@ class MenuAdapter(
     private var expandedPosition: Int = RecyclerView.NO_POSITION
 
     init {
-        // Add "Támogatók" menu item
-        val supportersItem = MainMenuItem(title = "Támogatóink", childs = null) // No child items
-        menuItems.add(supportersItem) // Add it to the end of the list
+        val supportersItem = MainMenuItem(title = "TÁMOGATÓINK", childs = null)
+        menuItems.add(supportersItem)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MenuViewHolder {
@@ -43,7 +42,7 @@ class MenuAdapter(
         holder.bind(menuItem)
 
         holder.itemView.setOnClickListener {
-            if (menuItem.title == "Támogatóink") {
+            if (menuItem.title == "TÁMOGATÓINK") {
                 val intent = Intent(context, SupportersActivity::class.java)
                 context.startActivity(intent)
             } else {
@@ -72,12 +71,10 @@ class MenuAdapter(
             holder.submenuRecyclerView.animate().alpha(1f).setDuration(Constants.ANIMATE_DURATION).start()
         }
 
-        // Add a special handling for "Főoldal"
         if (menuItem.title == "FŐOLDAL") {
             holder.itemView.setOnClickListener {
-                // Here we can create a ChildMenuItem for "FŐOLDAL"
                 val childMenuItem = ChildMenuItem(url = "https://www.szilagyi-eger.hu", title = "FŐOLDAL", childs = null)
-                onChildMenuItemClick(childMenuItem)  // Use the same callback to handle URL opening
+                onChildMenuItemClick(childMenuItem)
             }
         } else {
             if (isExpanded) {
@@ -115,7 +112,7 @@ class MenuAdapter(
     }
 
     fun updateMenu(items: List<MainMenuItem>) {
-        menuItems = items.toMutableList() // Ensure it's mutable again
+        menuItems = items.toMutableList()
         notifyDataSetChanged()
     }
 

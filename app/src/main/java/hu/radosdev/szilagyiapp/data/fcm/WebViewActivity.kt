@@ -69,7 +69,6 @@ class WebViewActivity : AppCompatActivity() {
 
         webView.webChromeClient = WebChromeClient()
 
-        // Retrieve and load URL from intent, handle missing URL
         val url = intent.getStringExtra(Constants.URL)
         if (!url.isNullOrEmpty()) {
             webView.loadUrl(url)
