@@ -5,7 +5,6 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
@@ -23,6 +22,7 @@ import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.data.entity.Supporter
 import hu.radosdev.szilagyiapp.menu.MenuAdapter
 import hu.radosdev.szilagyiapp.menu.MenuViewModel
+import hu.radosdev.szilagyiapp.util.Constants
 
 @AndroidEntryPoint
 class SupportersActivity : AppCompatActivity() {
@@ -35,9 +35,9 @@ class SupportersActivity : AppCompatActivity() {
     private lateinit var supportersAdapter: SupportersAdapter
 
     private val supportersList = listOf(
-        Supporter("Marshall Ablak Kft.", R.drawable.marshall_logo, "https://www.marshallablak.hu/"),
-        Supporter("Agria Informatika Kft.", R.drawable.ai, "https://agriainfo.hu"),
-        Supporter("Cserháti Gabriella e.v.", null, null) // No image
+        Supporter(Constants.MARSHALL, R.drawable.marshall_logo, Constants.MARSHALL_WEB),
+        Supporter(Constants.AGRIA, R.drawable.ai, Constants.AGRIA_WEB),
+        Supporter(Constants.EV, null, null)
     )
 
 
@@ -54,6 +54,10 @@ class SupportersActivity : AppCompatActivity() {
 
         menuLogo.setOnClickListener {
             animateLogoAndLoadUrl(menuLogo)
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra(Constants.URL, Constants.BASE_URL)
+            intent.putExtra(Constants.TITLE,Constants.MAIN_PAGE)
+            startActivity(intent)
         }
 
         val recyclerView = findViewById<RecyclerView>(R.id.menu_recycler_view)
@@ -65,13 +69,17 @@ class SupportersActivity : AppCompatActivity() {
         menuViewModel.menuItems.observe(this){
             items: List<MainMenuItem> ->
             val updatedItems = items.toMutableList()
-            updatedItems.add(MainMenuItem(title = "TÁMOGATÓINK", childs = null))
+            updatedItems.add(MainMenuItem(title = Constants.SUPPORTERS, childs = null))
             menuAdapter.updateMenu(updatedItems)
         }
 
         supportersListView = findViewById(R.id.supporters_list_view)
         supportersAdapter = SupportersAdapter(this, supportersList)
         supportersListView.adapter = supportersAdapter
+
+        toolbarTitle.text = Constants.SUPPORTERS
+
+
     }
 
     private fun toggleDrawer(){
@@ -84,25 +92,24 @@ class SupportersActivity : AppCompatActivity() {
 
     private fun handleChildMenuItemClick(childMenuItem: ChildMenuItem) {
         val intent = Intent(this, MainActivity::class.java)
-        intent.putExtra("url", childMenuItem.url)
+        intent.putExtra(Constants.URL, childMenuItem.url)
+        intent.putExtra(Constants.TITLE,childMenuItem.title)
         startActivity(intent)
-
-        toolbarTitle.text = childMenuItem.title
-        toolbarTitle.visibility = View.GONE
+        finish()
     }
 
     private fun animateLogoAndLoadUrl(menuLogo: ImageView) {
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
             menuLogo,
-            PropertyValuesHolder.ofFloat("scaleX", 1.2f),
-            PropertyValuesHolder.ofFloat("scaleY", 1.2f)
-        ).setDuration(300)
+            PropertyValuesHolder.ofFloat(Constants.SCALE_X, Constants.VALUE_ONETWO),
+            PropertyValuesHolder.ofFloat(Constants.SCALE_Y, Constants.VALUE_ONETWO)
+        ).setDuration(Constants.DURATION)
 
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
             menuLogo,
-            PropertyValuesHolder.ofFloat("scaleX", 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f)
-        ).setDuration(300)
+            PropertyValuesHolder.ofFloat(Constants.SCALE_X, Constants.VALUE_ONE),
+            PropertyValuesHolder.ofFloat(Constants.SCALE_Y, Constants.VALUE_ONE)
+        ).setDuration(Constants.DURATION)
 
         val animationSet = AnimatorSet()
         animationSet.play(scaleUp).before(scaleDown)
