@@ -7,58 +7,66 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingTop="50dp"
-        android:paddingBottom="50dp">
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/anniversary_logo"
-            android:layout_width="300dp"
-            android:layout_height="210dp"
-            android:src="@drawable/splash" />
-
-
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/splash"
+            android:layout_marginBottom="80dp" />
 
         <LinearLayout
-            android:layout_width="600dp"
-            android:layout_height="150dp"
-            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginTop="8dp">
+           >
+
+            <TextView
+                android:id="@+id/sponsor_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Támogatóink"
+                android:textSize="14sp"
+                android:textColor="@color/primary_pantone_gray"
+                android:gravity="center" />
 
             <ImageView
                 android:id="@+id/marshall_logo"
-                android:layout_width="180dp"
-                android:layout_height="300dp"
+                android:layout_width="120dp"
+                android:layout_height="40dp"
                 android:src="@drawable/marshall_logo"
-                android:layout_marginEnd="8dp" />
+                android:adjustViewBounds="true">
+            </ImageView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
 
             <ImageView
                 android:id="@+id/ai_logo"
-                android:layout_width="180dp"
-                android:layout_height="300dp"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
                 android:src="@drawable/ai"
-                android:layout_marginStart="8dp" />
+                android:adjustViewBounds="true"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/gabriella_text"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="@string/ev"
+                android:textSize="14sp"
+                android:textColor="@color/primary_pantone_gray"
+                android:gravity="center" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/sponsor_text"
-            android:layout_width="180dp"
-            android:layout_height="50dp"
-            android:text="@string/ev"
-            android:textSize="16sp"
-            android:textColor="@color/primary_pantone_orange"
-            android:layout_marginTop="8dp"
-            android:gravity="center" />
-
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
 
     </LinearLayout>
 </FrameLayout>
