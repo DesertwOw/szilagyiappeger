@@ -63,7 +63,7 @@ class WebViewActivity : AppCompatActivity() {
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error)
                 progressBar.visibility = View.GONE
-                Toast.makeText(this@WebViewActivity, "Failed to load page", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@WebViewActivity, Constants.WEB_VIEW_LOAD_FAILED, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -74,7 +74,7 @@ class WebViewActivity : AppCompatActivity() {
             webView.loadUrl(url)
         } else {
             progressBar.visibility = View.GONE
-            Toast.makeText(this, "Invalid URL", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, Constants.INVALID_URL, Toast.LENGTH_SHORT).show()
         }
     }
 }
