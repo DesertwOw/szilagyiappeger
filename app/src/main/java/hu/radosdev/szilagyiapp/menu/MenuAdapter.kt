@@ -12,7 +12,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import hu.radosdev.szilagyiapp.MainActivity
 import hu.radosdev.szilagyiapp.R
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
@@ -20,7 +19,7 @@ import hu.radosdev.szilagyiapp.supporters.SupportersActivity
 import hu.radosdev.szilagyiapp.util.Constants
 
 class MenuAdapter(
-    private var menuItems: MutableList<MainMenuItem>, // Change to MutableList
+    private var menuItems: MutableList<MainMenuItem>,
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit,
     private val context: Context
 ) : RecyclerView.Adapter<MenuAdapter.MenuViewHolder>() {
@@ -28,7 +27,7 @@ class MenuAdapter(
     private var expandedPosition: Int = RecyclerView.NO_POSITION
 
     init {
-        val supportersItem = MainMenuItem(title = "TÁMOGATÓINK", childs = null)
+        val supportersItem = MainMenuItem(title = Constants.SUPPORTERS, childs = null)
         menuItems.add(supportersItem)
     }
 
@@ -42,7 +41,7 @@ class MenuAdapter(
         holder.bind(menuItem)
 
         holder.itemView.setOnClickListener {
-            if (menuItem.title == "TÁMOGATÓINK") {
+            if (menuItem.title == Constants.SUPPORTERS) {
                 val intent = Intent(context, SupportersActivity::class.java)
                 context.startActivity(intent)
             } else {
@@ -71,9 +70,9 @@ class MenuAdapter(
             holder.submenuRecyclerView.animate().alpha(1f).setDuration(Constants.ANIMATE_DURATION).start()
         }
 
-        if (menuItem.title == "FŐOLDAL") {
+        if (menuItem.title == Constants.MAIN_PAGE) {
             holder.itemView.setOnClickListener {
-                val childMenuItem = ChildMenuItem(url = "https://www.szilagyi-eger.hu", title = "FŐOLDAL", childs = null)
+                val childMenuItem = ChildMenuItem(url = Constants.BASE_URL, title = Constants.MAIN_PAGE, childs = null)
                 onChildMenuItemClick(childMenuItem)
             }
         } else {

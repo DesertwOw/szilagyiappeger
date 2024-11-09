@@ -1,12 +1,9 @@
 package hu.radosdev.szilagyiapp
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -15,13 +12,13 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import hu.radosdev.szilagyiapp.data.entity.ChildMenuItem
 import hu.radosdev.szilagyiapp.data.entity.MainMenuItem
@@ -39,34 +36,39 @@ class MainActivity : AppCompatActivity() {
     private lateinit var menuAdapter: MenuAdapter
     private lateinit var inAppMessageManager: InAppMessageManager
     private lateinit var progressBar: ProgressBar
+    private lateinit var homeIcon: ImageView
+    private lateinit var toolbarTitle: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize InAppMessageManager
         inAppMessageManager = InAppMessageManager()
         inAppMessageManager.initialize(findViewById(R.id.in_app_notification_layout))
 
-
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
-        val homeIcon = findViewById<ImageView>(R.id.home)
-        val menuLogo = findViewById<ImageView>(R.id.menu_logo)
+        homeIcon = findViewById(R.id.home)
+        toolbarTitle = findViewById(R.id.toolbar_title)
 
-        // Set up WebView and ProgressBar
         webView = findViewById(R.id.webview)
         progressBar = findViewById(R.id.progress_bar)
 
-        // Menu icon click listener
         menuIcon.setOnClickListener { toggleDrawer() }
 
-        // Home icon click listener
         homeIcon.setOnClickListener {
             webView.loadUrl(Constants.BASE_URL)
+            resetToolbarToHome()
         }
 
-        // Set up RecyclerView for menu items
+        val menuLogo = findViewById<ImageView>(R.id.menu_logo)
+
+        menuLogo.setOnClickListener {
+            animateLogoAndLoadUrl(menuLogo)
+            webView.loadUrl(Constants.BASE_URL)
+            resetToolbarToHome()
+        }
+
         val recyclerView = findViewById<RecyclerView>(R.id.menu_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
         menuAdapter = MenuAdapter(mutableListOf(), ::handleChildMenuItemClick, this)
@@ -74,20 +76,24 @@ class MainActivity : AppCompatActivity() {
 
         setupWebView()
 
-        // Load menu items and ensure "Támogatók" is included
         menuViewModel.loadMenuItems()
         menuViewModel.menuItems.observe(this) { items: List<MainMenuItem> ->
             val updatedItems = items.toMutableList()
-            // Add "Támogatók" item to the list
-            updatedItems.add(MainMenuItem(title = "TÁMOGATÓINK", childs = null))
+            updatedItems.add(MainMenuItem(title = Constants.SUPPORTERS, childs = null))
             menuAdapter.updateMenu(updatedItems)
         }
 
-        // Menu logo click listener to animate and load URL
-        menuLogo.setOnClickListener {
-            animateLogoAndLoadUrl(menuLogo)
+        val incomingUrl = intent.getStringExtra(Constants.URL)
+        if (incomingUrl != null) {
+            webView.loadUrl(incomingUrl)
+            toolbarTitle.text = intent.getStringExtra(Constants.TITLE)
+            toolbarTitle.visibility = View.VISIBLE
+            homeIcon.visibility = View.GONE
+        } else {
+            webView.loadUrl(Constants.BASE_URL)
         }
     }
+
 
     private fun setupWebView() {
         webView.settings.javaScriptEnabled = true
@@ -102,15 +108,12 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                // Hide specific elements after the page has loaded
                 val hideElementsScript = """
                     (function() {
                         var header = document.querySelector('header');
                         if (header) header.style.display = 'none';
                         var breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
                         if (breadcrumbNav) breadcrumbNav.style.display = 'none';
-                
-                        // Additional code to hide specified elements
                         document.getElementsByClassName('container')[0].style.display='none'; 
                         document.querySelector('.bg-brown').style.display='none'; 
                     })();
@@ -130,7 +133,6 @@ class MainActivity : AppCompatActivity() {
 
         webView.webChromeClient = WebChromeClient()
 
-        // Load the initial URL
         webView.loadUrl(Constants.BASE_URL)
     }
 
@@ -145,34 +147,33 @@ class MainActivity : AppCompatActivity() {
     private fun handleChildMenuItemClick(childMenuItem: ChildMenuItem) {
         webView.loadUrl(childMenuItem.url)
         toggleDrawer()
+
+        homeIcon.visibility = View.GONE
+        toolbarTitle.text = childMenuItem.title
+        toolbarTitle.visibility = View.VISIBLE
+    }
+
+    private fun resetToolbarToHome() {
+        homeIcon.visibility = View.VISIBLE
+        toolbarTitle.visibility = View.GONE
     }
 
     private fun animateLogoAndLoadUrl(menuLogo: ImageView) {
-        // Create an animation to scale the logo
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
             menuLogo,
-            PropertyValuesHolder.ofFloat("scaleX", 1.2f), // Scale up in X direction
-            PropertyValuesHolder.ofFloat("scaleY", 1.2f)  // Scale up in Y direction
-        ).setDuration(300) // Duration of the animation
+            PropertyValuesHolder.ofFloat(Constants.SCALE_X, Constants.VALUE_ONETWO),
+            PropertyValuesHolder.ofFloat(Constants.SCALE_Y, Constants.VALUE_ONETWO)
+        ).setDuration(Constants.DURATION)
 
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
             menuLogo,
-            PropertyValuesHolder.ofFloat("scaleX", 1f), // Scale back to original
-            PropertyValuesHolder.ofFloat("scaleY", 1f)  // Scale back to original
-        ).setDuration(300) // Duration of the animation
+            PropertyValuesHolder.ofFloat(Constants.SCALE_X, Constants.VALUE_ONE),
+            PropertyValuesHolder.ofFloat(Constants.SCALE_Y, Constants.VALUE_ONE)
+        ).setDuration(Constants.DURATION)
 
-        // Set up an AnimatorSet to play animations sequentially
         val animationSet = AnimatorSet()
         animationSet.play(scaleUp).before(scaleDown)
 
-        // Add a listener to load the URL after the animation
-        animationSet.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                webView.loadUrl(Constants.BASE_URL)
-            }
-        })
-
-        // Start the animation
         animationSet.start()
     }
 }
