@@ -10,6 +10,7 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var homeIcon: ImageView
     private lateinit var toolbarTitle: TextView
+    private lateinit var errorLayout: View // View for error message and button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,14 +47,22 @@ class MainActivity : AppCompatActivity() {
 
         inAppMessageManager = InAppMessageManager()
         inAppMessageManager.initialize(findViewById(R.id.in_app_notification_layout))
-
         drawerLayout = findViewById(R.id.drawer_layout)
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
         homeIcon = findViewById(R.id.home)
         toolbarTitle = findViewById(R.id.toolbar_title)
-
         webView = findViewById(R.id.webview)
         progressBar = findViewById(R.id.progress_bar)
+        errorLayout = findViewById(R.id.error_layout)
+
+        val retryButton = findViewById<Button>(R.id.retry_button)
+        retryButton.setOnClickListener {
+            errorLayout.visibility = View.GONE
+            webView.loadUrl(Constants.BASE_URL)
+        }
+
+        // WebView setup
+        setupWebView()
 
         menuIcon.setOnClickListener { toggleDrawer() }
 
@@ -62,20 +72,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         val menuLogo = findViewById<ImageView>(R.id.menu_logo)
-
         menuLogo.setOnClickListener {
             animateLogoAndLoadUrl(menuLogo)
             webView.loadUrl(Constants.BASE_URL)
             resetToolbarToHome()
         }
 
+        // RecyclerView for menu
         val recyclerView = findViewById<RecyclerView>(R.id.menu_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
         menuAdapter = MenuAdapter(mutableListOf(), ::handleChildMenuItemClick, this)
         recyclerView.adapter = menuAdapter
 
-        setupWebView()
-
+        // Load menu items and observe
         menuViewModel.loadMenuItems()
         menuViewModel.menuItems.observe(this) { items: List<MainMenuItem> ->
             val updatedItems = items.toMutableList()
@@ -83,6 +92,7 @@ class MainActivity : AppCompatActivity() {
             menuAdapter.updateMenu(updatedItems)
         }
 
+        // Load incoming URL or default
         val incomingUrl = intent.getStringExtra(Constants.URL)
         if (incomingUrl != null) {
             webView.loadUrl(incomingUrl)
@@ -94,7 +104,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun setupWebView() {
         webView.settings.javaScriptEnabled = true
 
@@ -103,11 +112,10 @@ class MainActivity : AppCompatActivity() {
                 super.onPageStarted(view, url, favicon)
                 progressBar.visibility = View.VISIBLE
                 webView.visibility = View.GONE
+                errorLayout.visibility = View.GONE
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-
                 val hideElementsScript = """
                     (function() {
                         var header = document.querySelector('header');
@@ -128,12 +136,12 @@ class MainActivity : AppCompatActivity() {
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error)
                 progressBar.visibility = View.GONE
+                webView.visibility = View.GONE
+                errorLayout.visibility = View.VISIBLE // Show error layout
             }
         }
 
         webView.webChromeClient = WebChromeClient()
-
-        webView.loadUrl(Constants.BASE_URL)
     }
 
     private fun toggleDrawer() {
@@ -173,7 +181,6 @@ class MainActivity : AppCompatActivity() {
 
         val animationSet = AnimatorSet()
         animationSet.play(scaleUp).before(scaleDown)
-
         animationSet.start()
     }
 }

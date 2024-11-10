@@ -77,7 +77,6 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
-
         <include
             android:id="@+id/in_app_notification_layout"
             layout="@layout/in_app_notification" />
@@ -98,6 +97,33 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:visibility="gone" />
+
+            <!-- Error message layout -->
+            <LinearLayout
+                android:id="@+id/error_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone"
+                android:background="@android:color/white">
+
+                <TextView
+                    android:id="@+id/error_message"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sajnos ez az oldal nem elérhető"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black"
+                    android:paddingBottom="16dp" />
+
+                <Button
+                    android:id="@+id/retry_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vissza a főoldalra" />
+            </LinearLayout>
+
         </FrameLayout>
 
     </LinearLayout>
