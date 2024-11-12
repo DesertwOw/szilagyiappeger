@@ -35,7 +35,7 @@ class SupportersActivity : AppCompatActivity() {
     private lateinit var supportersAdapter: SupportersAdapter
 
     private val supportersList = listOf(
-        Supporter(Constants.MARSHALL, R.drawable.marshall_logo, Constants.MARSHALL_WEB),
+        Supporter(Constants.MARSHALL, R.drawable.msh_supp, Constants.MARSHALL_WEB),
         Supporter(Constants.AGRIA, R.drawable.ai, Constants.AGRIA_WEB),
         Supporter(Constants.EV, null, null)
     )
