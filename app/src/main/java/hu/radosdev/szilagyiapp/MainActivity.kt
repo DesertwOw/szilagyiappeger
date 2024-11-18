@@ -3,6 +3,8 @@ package hu.radosdev.szilagyiapp
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebChromeClient
@@ -39,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var homeIcon: ImageView
     private lateinit var toolbarTitle: TextView
-    private lateinit var errorLayout: View // View for error message and button
+    private lateinit var errorLayout: View 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +63,6 @@ class MainActivity : AppCompatActivity() {
             webView.loadUrl(Constants.BASE_URL)
         }
 
-        // WebView setup
         setupWebView()
 
         menuIcon.setOnClickListener { toggleDrawer() }
@@ -78,13 +79,11 @@ class MainActivity : AppCompatActivity() {
             resetToolbarToHome()
         }
 
-        // RecyclerView for menu
         val recyclerView = findViewById<RecyclerView>(R.id.menu_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
         menuAdapter = MenuAdapter(mutableListOf(), ::handleChildMenuItemClick, this)
         recyclerView.adapter = menuAdapter
 
-        // Load menu items and observe
         menuViewModel.loadMenuItems()
         menuViewModel.menuItems.observe(this) { items: List<MainMenuItem> ->
             val updatedItems = items.toMutableList()
@@ -92,7 +91,6 @@ class MainActivity : AppCompatActivity() {
             menuAdapter.updateMenu(updatedItems)
         }
 
-        // Load incoming URL or default
         val incomingUrl = intent.getStringExtra(Constants.URL)
         if (incomingUrl != null) {
             webView.loadUrl(incomingUrl)
@@ -108,6 +106,24 @@ class MainActivity : AppCompatActivity() {
         webView.settings.javaScriptEnabled = true
 
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val url = request?.url.toString()
+
+                if (url.contains(Constants.FACEBOOK_URL, ignoreCase = true)) {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        intent.setPackage(Constants.FACEBOOK_PACKAGE_NAME)
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        val fallbackIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(fallbackIntent)
+                    }
+                    return true
+                }
+
+                return false
+            }
+
             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 progressBar.visibility = View.VISIBLE
@@ -117,15 +133,15 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 val hideElementsScript = """
-                    (function() {
-                        var header = document.querySelector('header');
-                        if (header) header.style.display = 'none';
-                        var breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
-                        if (breadcrumbNav) breadcrumbNav.style.display = 'none';
-                        document.getElementsByClassName('container')[0].style.display='none'; 
-                        document.querySelector('.bg-brown').style.display='none'; 
-                    })();
-                """.trimIndent()
+                (function() {
+                    var header = document.querySelector('header');
+                    if (header) header.style.display = 'none';
+                    var breadcrumbNav = document.querySelector('nav[aria-label="breadcrumb"]');
+                    if (breadcrumbNav) breadcrumbNav.style.display = 'none';
+                    document.getElementsByClassName('container')[0].style.display='none'; 
+                    document.querySelector('.bg-brown').style.display='none'; 
+                })();
+            """.trimIndent()
 
                 webView.evaluateJavascript(hideElementsScript) {
                     progressBar.visibility = View.GONE
@@ -137,12 +153,13 @@ class MainActivity : AppCompatActivity() {
                 super.onReceivedError(view, request, error)
                 progressBar.visibility = View.GONE
                 webView.visibility = View.GONE
-                errorLayout.visibility = View.VISIBLE // Show error layout
+                errorLayout.visibility = View.VISIBLE
             }
         }
 
         webView.webChromeClient = WebChromeClient()
     }
+
 
     private fun toggleDrawer() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
