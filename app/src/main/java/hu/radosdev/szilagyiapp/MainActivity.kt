@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var homeIcon: ImageView
     private lateinit var toolbarTitle: TextView
-    private lateinit var errorLayout: View 
+    private lateinit var errorLayout: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,15 +109,8 @@ class MainActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val url = request?.url.toString()
 
-                if (url.contains(Constants.FACEBOOK_URL, ignoreCase = true)) {
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        intent.setPackage(Constants.FACEBOOK_PACKAGE_NAME)
-                        startActivity(intent)
-                    } catch (e: Exception) {
-                        val fallbackIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        startActivity(fallbackIntent)
-                    }
+                if (isExternalLink(url)) {
+                    openInExternalBrowser(url)
                     return true
                 }
 
@@ -159,6 +152,31 @@ class MainActivity : AppCompatActivity() {
 
         webView.webChromeClient = WebChromeClient()
     }
+
+    private fun isExternalLink(url: String): Boolean {
+        val internalDomain = Constants.BASE_URL // Cseréld le a saját domain-edre
+        return url.endsWith(".pdf", ignoreCase = true) || // PDF fájlok
+                !url.contains(internalDomain, ignoreCase = true) // Nem belső URL-ek
+    }
+
+    private fun openInExternalBrowser(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+
+    override fun onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
 
 
     private fun toggleDrawer() {

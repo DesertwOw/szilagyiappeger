@@ -30,7 +30,7 @@
 
                     <FrameLayout
                         android:id="@+id/menu_icon_container"
-                        android:layout_width="48dp"
+                        android:layout_width="80dp"
                         android:layout_height="match_parent"
                         app:layout_constraintStart_toStartOf="parent"
                         android:paddingTop="12dp"

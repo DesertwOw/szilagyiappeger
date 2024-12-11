@@ -18,14 +18,7 @@ class ChildMenuAdapter(
     private val onChildMenuItemClick: (ChildMenuItem) -> Unit
 ) : RecyclerView.Adapter<ChildMenuAdapter.ChildMenuViewHolder>() {
 
-    private val expandedChildStates = mutableMapOf<Int, Boolean>()
-    private var selectedPosition: Int? = null
-
-    inner class ChildMenuViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.findViewById(R.id.child_menu_item_title)
-        val submenuRecyclerView: RecyclerView = itemView.findViewById(R.id.submenu_recycler_view)
-        val expandIcon: ImageView = itemView.findViewById(R.id.menu_item_expand_icon)
-    }
+    private var expandedPosition: Int = RecyclerView.NO_POSITION
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildMenuViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.child_menu_item, parent, false)
@@ -33,105 +26,79 @@ class ChildMenuAdapter(
     }
 
     override fun onBindViewHolder(holder: ChildMenuViewHolder, position: Int) {
-        val childMenuItem = childMenuItems[holder.bindingAdapterPosition]
-        holder.title.text = childMenuItem.title
-
-        if (childMenuItem.childs?.isNotEmpty() == true) {
-            holder.expandIcon.visibility = View.VISIBLE
-
-            holder.expandIcon.rotation = if (expandedChildStates[holder.bindingAdapterPosition] == true) Constants.ANIMATE_ANGLE else Constants.SUBMENU_RECYCLER_VIEW_ALPHA
-
-            if (holder.bindingAdapterPosition == selectedPosition && expandedChildStates[holder.bindingAdapterPosition] == true) {
-                holder.title.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange))
-                holder.expandIcon.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange))
-            } else {
-                holder.title.setBackgroundColor(Color.TRANSPARENT)
-                holder.expandIcon.setBackgroundColor(Color.TRANSPARENT)
-            }
-
-            holder.itemView.setOnClickListener {
-                val previousSelectedPosition = selectedPosition
-                selectedPosition = holder.bindingAdapterPosition
-
-                expandedChildStates[holder.bindingAdapterPosition] = expandedChildStates.getOrDefault(holder.bindingAdapterPosition, false).not()
-
-                if (previousSelectedPosition != null) {
-                    notifyItemChanged(previousSelectedPosition)
-                }
-                notifyItemChanged(holder.bindingAdapterPosition)
-            }
-
-            holder.expandIcon.setOnClickListener {
-                val previousSelectedPosition = selectedPosition
-                selectedPosition = holder.bindingAdapterPosition
-
-                expandedChildStates[holder.bindingAdapterPosition] = expandedChildStates.getOrDefault(holder.bindingAdapterPosition, false).not()
-
-                if (previousSelectedPosition != null) {
-                    notifyItemChanged(previousSelectedPosition)
-                }
-                notifyItemChanged(holder.bindingAdapterPosition)
-            }
-
-            holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
-            holder.submenuRecyclerView.adapter = ChildMenuAdapter(childMenuItem.childs) { nestedChildMenuItem ->
-                resetHighlights()
-
-                if (nestedChildMenuItem.url.isNotEmpty()) {
-                    onChildMenuItemClick(nestedChildMenuItem)
-                }
-
-                val previousSelectedPosition = selectedPosition
-                selectedPosition = holder.bindingAdapterPosition
-
-                if (previousSelectedPosition != null) {
-                    notifyItemChanged(previousSelectedPosition)
-                }
-                notifyItemChanged(holder.bindingAdapterPosition)
-            }
-
-            if (expandedChildStates[holder.bindingAdapterPosition] == true) {
-                holder.submenuRecyclerView.visibility = View.VISIBLE
-                holder.submenuRecyclerView.alpha = Constants.SUBMENU_RECYCLER_VIEW_ALPHA
-                holder.submenuRecyclerView.animate().alpha(1f).setDuration(Constants.ANIMATE_DURATION).start()
-            } else {
-                holder.submenuRecyclerView.animate().alpha(Constants.SUBMENU_RECYCLER_VIEW_ALPHA).setDuration(Constants.ANIMATE_DURATION).withEndAction {
-                    holder.submenuRecyclerView.visibility = View.GONE
-                }.start()
-            }
-        } else {
-            holder.expandIcon.visibility = View.GONE
-            holder.submenuRecyclerView.visibility = View.GONE
-
-            if (holder.bindingAdapterPosition == selectedPosition) {
-                holder.title.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange))
-            } else {
-                holder.title.setBackgroundColor(Color.TRANSPARENT)
-            }
-        }
+        val childMenuItem = childMenuItems[position]
+        holder.bind(childMenuItem)
 
         holder.itemView.setOnClickListener {
-            val previousSelectedPosition = selectedPosition
-            selectedPosition = holder.bindingAdapterPosition
+            val wasExpanded = expandedPosition == holder.bindingAdapterPosition
 
-            if (childMenuItem.url.isNotEmpty()) {
+            if (expandedPosition != RecyclerView.NO_POSITION) {
+                notifyItemChanged(expandedPosition)
+            }
+
+            expandedPosition = if (wasExpanded) {
+                RecyclerView.NO_POSITION
+            } else {
+                holder.bindingAdapterPosition
+            }
+
+            notifyItemChanged(holder.bindingAdapterPosition)
+
+            if (childMenuItem.childs.isNullOrEmpty() && childMenuItem.url.isNotEmpty()) {
                 onChildMenuItemClick(childMenuItem)
             }
-
-            if (previousSelectedPosition != null) {
-                notifyItemChanged(previousSelectedPosition)
-            }
-            notifyItemChanged(holder.bindingAdapterPosition)
         }
-    }
 
-    private fun resetHighlights() {
-        val previousSelectedPosition = selectedPosition
-        selectedPosition = null
-        expandedChildStates.clear()
+        val isExpanded = holder.bindingAdapterPosition == expandedPosition
+        holder.submenuRecyclerView.visibility = if (isExpanded) View.VISIBLE else View.GONE
 
-        previousSelectedPosition?.let { notifyItemChanged(it) }
+        if (isExpanded) {
+            holder.submenuRecyclerView.alpha = Constants.SUBMENU_RECYCLER_VIEW_ALPHA
+            holder.submenuRecyclerView.animate().alpha(1f).setDuration(Constants.ANIMATE_DURATION).start()
+
+            // Set up nested adapter if there are child items
+            holder.submenuRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
+            holder.submenuRecyclerView.adapter = ChildMenuAdapter(childMenuItem.childs ?: emptyList()) { nestedChild ->
+                onChildMenuItemClick(nestedChild)
+            }
+        }
+
+        holder.titleTextView.setBackgroundColor(
+            if (isExpanded) {
+                ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange)
+            } else {
+                Color.TRANSPARENT
+            }
+        )
+
+        holder.expandIcon.setBackgroundColor(
+            if (isExpanded) {
+                ContextCompat.getColor(holder.itemView.context, R.color.primary_pantone_orange)
+            } else {
+                Color.TRANSPARENT
+            }
+        )
     }
 
     override fun getItemCount(): Int = childMenuItems.size
+
+    inner class ChildMenuViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val titleTextView: TextView = itemView.findViewById(R.id.child_menu_item_title)
+        val expandIcon: ImageView = itemView.findViewById(R.id.menu_item_expand_icon)
+        val submenuRecyclerView: RecyclerView = itemView.findViewById(R.id.submenu_recycler_view)
+
+        fun bind(childMenuItem: ChildMenuItem) {
+            titleTextView.text = childMenuItem.title
+
+            if (!childMenuItem.childs.isNullOrEmpty()) {
+                expandIcon.visibility = View.VISIBLE
+                val isExpanded = bindingAdapterPosition == expandedPosition
+
+                expandIcon.rotation = if (isExpanded) Constants.ANIMATE_ANGLE else Constants.SUBMENU_RECYCLER_VIEW_ALPHA
+                expandIcon.animate().rotation(if (isExpanded) Constants.ANIMATE_ANGLE else Constants.SUBMENU_RECYCLER_VIEW_ALPHA).setDuration(Constants.ANIMATE_DURATION).start()
+            } else {
+                expandIcon.visibility = View.GONE
+            }
+        }
+    }
 }
